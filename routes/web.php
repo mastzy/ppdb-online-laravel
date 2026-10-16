@@ -1,13 +1,12 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DocumentController;
-use App\Http\Controllers\PdfCardController;
-use App\Http\Controllers\RegistrationController;
-use App\Http\Controllers\VerificationController;
-use App\Models\Registration;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RegistrationController;
+use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\VerificationController;
+use App\Http\Controllers\PdfCardController;
+use App\Models\Registration;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// --- Halaman Utama & Tamu (Guest Routes) ---
+// --- 1. Landing Page & Guest Routes ---
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
@@ -24,48 +23,38 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
-    Route::post('/register', [AuthController::class, 'register'])->name('register'); // REQ-AUTH-01: Validasi NIK/NISN
+    Route::post('/register', [AuthController::class, 'register'])->name('register'); // REQ-AUTH-01
 });
 
-// Logout Route (Auth Users)
-Route::post('/logout', function () {
-    Auth::logout();
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-    return redirect()->route('login');
-})->middleware('auth')->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
-// --- Rute Calon Siswa (Role: Siswa) ---
+// --- 2. Dashboard Calon Siswa (Role: siswa) ---
 Route::middleware(['auth', 'role:siswa'])->group(function () {
-    // Dashboard & Form Pendaftaran Multistep
     Route::get('/siswa/dashboard', [RegistrationController::class, 'index'])->name('siswa.dashboard');
     
-    // REQ-REG-01 & REQ-REG-02: Save Draft Form Pendaftaran
+    // REQ-REG-01 & REQ-REG-02: Simpan Draft Form Pendaftaran
     Route::post('/registration/draft', [RegistrationController::class, 'saveDraft'])->name('registration.draft');
     
-    // REQ-REG-03: Finalisasi / Lock Data Permanen
+    // REQ-REG-03: Lock Data / Finalisasi Permanen
     Route::post('/registration/finalize', [RegistrationController::class, 'finalize'])->name('registration.finalize');
     
-    // REQ-FILE-01 & REQ-FILE-02: Unggah Berkas & Hashing SHA-256
+    // REQ-FILE-01 & REQ-FILE-02: Unggah Berkas Ber-hash SHA-256
     Route::post('/documents/upload', [DocumentController::class, 'store'])->name('documents.upload');
     
-    // REQ-OUT-02: Unduh Kartu Pendaftaran PDF ber-QR Code
+    // REQ-OUT-02 & REQ-OUT-03: Unduh Kartu PDF ber-QR Code
     Route::get('/registration/card/pdf', [PdfCardController::class, 'downloadCard'])->name('registration.card.pdf');
 });
 
-// --- Rute Panitia & Admin (Role: Verifikator, Admin) ---
+// --- 3. Dashboard Panitia & Admin (Role: verifikator, admin) ---
 Route::middleware(['auth', 'role:verifikator,admin'])->group(function () {
-    // REQ-VERIF-01: Dashboard Verifikator & Filtering Pendaftar
+    // REQ-VERIF-01: Dashboard Verifikator & Filter Data
     Route::get('/verifikator/dashboard', [VerificationController::class, 'index'])->name('verifikator.dashboard');
     
-    // REQ-VERIF-02 & REQ-VERIF-03: Update Status Verifikasi & Catatan Perbaikan
+    // REQ-VERIF-02 & REQ-VERIF-03: Update Status Verifikasi & Catatan Koreksi
     Route::post('/verifikator/verify/{registration}', [VerificationController::class, 'updateStatus'])->name('verifikator.verify');
-    
-    // REQ-FILE-03: In-App Document Preview untuk Panitia
-    Route::get('/verifikator/document/{document}/preview', [DocumentController::class, 'preview'])->name('verifikator.document.preview');
 });
 
-// --- Rute Publik (REQ-OUT-03: Validasi Keabsahan QR Code) ---
+// --- 4. Public Route: Validasi Encrypted QR Code ---
 Route::get('/verify/document/{hash}', function ($hash) {
     try {
         $id = decrypt($hash);
