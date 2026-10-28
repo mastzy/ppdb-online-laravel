@@ -11,3 +11,11 @@
   - Add more detailed performance monitoring for the Laravel app.
   - Create additional AI-friendly documentation for deployment on Laravel Cloud.
 
+# Status Terakhir Pengerjaan
+- **Status UI**: Landing page `welcome.blade.php` sudah menggunakan CDN Tailwind & Plus Jakarta Sans (berwarna & responsif).
+- **Status Route**: `routes/web.php` sudah dibersihkan dari duplikat `ApplicantRegistrationController` dan rute `pendaftar.cek-status` sudah ditambahkan.
+
+# Langkah Selanjutnya untuk Antigravity
+1. Polesa dan integrasikan halaman Formulir Pendaftaran Bertahap (`resources/views/register/wizard.blade.php`).
+2. Selesaikan tampilan Portal Siswa / Live Tracking (`resources/views/student/dashboard.blade.php`).
+3. Selesaikan halaman Dashboard Verifikator Berkas (`resources/views/admin/verification/index.blade.php`).
