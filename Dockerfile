@@ -1,35 +1,34 @@
 FROM php:8.2-fpm
 
-# Install dependensi sistem & ekstensi PHP yang dibutuhkan
+# Set working directory
+WORKDIR /var/www
+
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    build-essential \
+    git \
+    curl \
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
-    locales \
+    libzip-dev \
     zip \
-    jpegoptim optipng pngquant gifsicle \
-    vim \
     unzip \
-    git \
-    curl \
-    libpq-dev \
-    libzip-dev
+    && rm -rf /var/lib/apt/lists/*
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Configure and install PHP extensions: pdo_mysql, gd, zip, bcmath
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        pdo_mysql \
+        gd \
+        zip \
+        bcmath \
+        exif \
+        pcntl
 
-# Install ekstensi PHP (PostgreSQL & MySQL driver)
-RUN docker-php-ext-install pdo pdo_pgsql pdo_mysql zip exif pcntl
-RUN docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/
-RUN docker-php-ext-install gd
-
-# Install Composer
+# Install Composer from official image
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www
-
-USER www-data
-
+# Expose port 9000 for PHP-FPM
 EXPOSE 9000
+
 CMD ["php-fpm"]

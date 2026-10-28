@@ -34,10 +34,23 @@
             <h2>Dashboard Verifikasi Panitia PPDB</h2>
             <p>Pengelola: <strong>{{ auth()->user()->name }}</strong> (Role: Verifikator/Admin)</p>
         </div>
-        <form action="{{ route('logout') }}" method="POST">
-            @csrf
-            <button type="submit" class="btn btn-danger">Logout</button>
-        </form>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <a href="{{ route('admin.export.emis') }}" class="btn" style="background:#059669; color:white;" title="Ekspor Data Siswa Lulus Format EMIS 4.0 Kemenag">
+                📥 Ekspor EMIS (Kemenag)
+            </a>
+            <a href="{{ route('admin.export.dapodik') }}" class="btn" style="background:#2563eb; color:white;" title="Ekspor Data Siswa Lulus Format Dapodik Kemendikbud">
+                📥 Ekspor Dapodik (Kemendikbud)
+            </a>
+            @if(in_array(auth()->user()->role, ['admin', 'bendahara']))
+                <a href="{{ route('bendahara.kasir') }}" class="btn" style="background:#0284c7; color:white;">
+                    💵 Mode Kasir Offline
+                </a>
+            @endif
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
+        </div>
     </div>
 
     @if(session('success'))

@@ -154,15 +154,33 @@
         </table>
     @endif
 
-    <!-- 3. Cetak Output Dokumentasi (REQ-OUT-02 & REQ-OUT-03) -->
-    <h3 class="section-title">3. Cetak Kartu Pendaftaran & Hasil</h3>
+    <!-- 3. Cetak Output Dokumentasi & Pembayaran (REQ-OUT-02, REQ-OUT-03 & Modul Pembayaran) -->
+    <h3 class="section-title">3. Pembayaran Administrasi & Cetak Dokumen Resmi</h3>
     @if($isLocked)
-        <p>Data Anda telah difinalisasi. Anda dapat mengunduh bukti tanda pendaftaran resmi yang dilengkapi Encrypted QR Code:</p>
-        <a href="{{ route('registration.card.pdf') }}" class="btn btn-success" target="_blank">
-            📄 Unduh Kartu Pendaftaran (PDF & QR Code)
-        </a>
+        <p>Data Anda telah difinalisasi. Silakan lakukan pembayaran administrasi resmi dan unduh dokumen bukti:</p>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+            <a href="{{ route('pendaftar.pembayaran') }}" class="btn btn-primary">
+                💳 Halaman Pembayaran Mandiri (Transfer / Kasir)
+            </a>
+            <a href="{{ route('registration.card.pdf') }}" class="btn btn-success" target="_blank">
+                📄 Unduh Kartu Pendaftaran (PDF & QR Code)
+            </a>
+            @if(in_array($status, ['paid', 'verified', 'passed']))
+                <a href="{{ route('kuitansi.pdf', $registration->id) }}" class="btn" style="background:#0284c7; color:white;" target="_blank">
+                    🧾 Unduh Kuitansi Resmi PDF
+                </a>
+            @endif
+            <a href="{{ route('stopmap.pdf', $registration->id) }}" class="btn" style="background:#475569; color:white;" target="_blank">
+                📋 Unduh Ringkasan Stopmap (PDF)
+            </a>
+            @if($status === 'passed')
+                <a href="{{ route('siswa.welcome_hub') }}" class="btn" style="background:#059669; color:white;">
+                    🎉 Buka Welcome Hub (LULUS)
+                </a>
+            @endif
+        </div>
     @else
-        <p style="color: #6c757d;">Tombol cetak kartu pendaftaran akan aktif setelah Anda melakukan <strong>Finalisasi Data</strong>.</p>
+        <p style="color: #6c757d;">Menu pembayaran dan cetak berkas resmi akan aktif setelah Anda melakukan <strong>Finalisasi Data</strong>.</p>
     @endif
 </div>
 

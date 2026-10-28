@@ -1,0 +1,21 @@
+## PROJECT CONTEXT
+
+- **Project name**: PPDB Online (Sistem Informasi Penerimaan Peserta Didik Online)
+- **Laravel version**: 11.x (see `composer.json` → `laravel/framework": "^11.0"`)
+- **PHP version**: 8.2 (platform requirement in `composer.json`)
+- **Database**: MySQL 8.0 (service `db` in `docker-compose.yml`)
+- **Cache / Session**: Redis (service `redis`)
+- **Web server**: Nginx (service `webserver`)
+- **Additional services**: phpMyAdmin, Redis
+- **Key modules already implemented**:
+  - **Pendaftaran (Registration)** – multi‑step form, applicant authentication (NIK / tanggal lahir), sibling discount.
+  - **Autentikasi** – applicant (password‑less) and admin/pendaftaran (username/password).
+  - **Verifikasi** – verifikator & admin can verify registrations.
+  - **Pembayaran** – upload bukti transfer, payment status tracking.
+  - **Dokumen** – upload & preview documents, PDF card generation, stop‑map résumé PDF, receipt PDF with QR code.
+  - **Export** – admin data export (EMIS, Dapodik).
+  - **Kasir offline** – cash payment handling.
+  - **API** – quick status endpoint.
+- **Architecture**: Containerised Laravel app (PHP‑FPM) behind Nginx, MySQL & Redis as separate containers.
+- **Testing**: PHPUnit feature tests in `tests/Feature/`.
+- **Version control**: Git repository (see `git status`).
