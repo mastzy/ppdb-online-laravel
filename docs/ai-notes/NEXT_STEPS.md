@@ -1,21 +1,16 @@
 ## NEXT STEPS
 
-- **Current session**: AI Coding Continuity configuration initialized.
-- **Immediate actions**:
-  1. Verify that all documentation files have been created and contain the expected information.
-  2. Execute the diagnostic script `scripts/ai-project-status.sh` to capture the repository, Docker Compose and container status.
-  3. Review the script output and record any anomalies in `docs/ai-notes/DOCKER_STATUS.md` and `docs/ai-notes/SESSION_LOG.md`.
-  4. Update `docs/ai-notes/TASKS.md` as work progresses.
-- **Future work** (not started yet):
-  - Implement CI/CD pipeline for automated testing and Docker image builds.
-  - Add more detailed performance monitoring for the Laravel app.
-  - Create additional AI-friendly documentation for deployment on Laravel Cloud.
+- **Status Proyek Terkini**: Seluruh modul backend, controller logic, serta antarmuka UI Blade (Tailwind CSS CDN, Plus Jakarta Sans, FontAwesome, Alpine.js) telah 100% lengkap, terintegrasi, dan seluruh test suite lulus (10 passed, 112 assertions).
 
-# Status Terakhir Pengerjaan
-- **Status UI**: Landing page `welcome.blade.php` sudah menggunakan CDN Tailwind & Plus Jakarta Sans (berwarna & responsif).
-- **Status Route**: `routes/web.php` sudah dibersihkan dari duplikat `ApplicantRegistrationController` dan rute `pendaftar.cek-status` sudah ditambahkan.
+- **Pekerjaan yang Telah Selesai**:
+  1. Halaman Formulir Pendaftaran Bertahap (`resources/views/pendaftar/formulir.blade.php`).
+  2. Halaman Hasil Cek Status Cepat Publik (`resources/views/pendaftar/cek_status_result.blade.php`).
+  3. Portal Pembayaran Siswa & Upload Struk Mandiri (`resources/views/pendaftar/pembayaran.blade.php`).
+  4. Portal Siswa Diterima & Unduh Berkas (`resources/views/pendaftar/welcome_hub.blade.php`).
+  5. Dashboard Verifikator & In-App Document Preview Modal (`resources/views/admin/verification/index.blade.php` & `show.blade.php`).
+  6. Dashboard Mode Kasir Offline Bendahara (`resources/views/admin/kasir/index.blade.php`).
+  7. Halaman Validasi Publik Scan QR Code Dokumen Resmi (`resources/views/public/verify_document.blade.php`).
 
-# Langkah Selanjutnya untuk Antigravity
-1. Polesa dan integrasikan halaman Formulir Pendaftaran Bertahap (`resources/views/register/wizard.blade.php`).
-2. Selesaikan tampilan Portal Siswa / Live Tracking (`resources/views/student/dashboard.blade.php`).
-3. Selesaikan halaman Dashboard Verifikator Berkas (`resources/views/admin/verification/index.blade.php`).
+- **Langkah Lanjutan Berikutnya**:
+  - Konfigurasi workflow GitHub Actions / CI/CD untuk otomatisasi build dan test run.
+  - Penyiapan environment staging atau deployment ke Laravel Cloud.
