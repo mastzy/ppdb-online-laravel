@@ -3,798 +3,548 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Formulir Pendaftaran Siswa Baru - Progressive Wizard</title>
-    
+    <title>Formulir Pendaftaran Siswa Baru 2026 - PPDB Mandiri</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Alpine.js 3 -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        [x-cloak] { display: none !important; }
+    </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans selection:bg-teal-500 selection:text-white"
-      x-data="registrationWizard({
-          initialStep: {{ $applicant ? ($applicant->status === 'pending_payment' || $applicant->status === 'paid' ? 4 : ($applicant->cluster_id ? 3 : 2)) : 1 }},
-          regCode: '{{ $applicant->reg_code ?? '' }}',
-          fullName: '{{ addslashes($applicant->full_name ?? '') }}',
-          nik: '{{ $applicant->nik ?? '' }}',
-          dob: '{{ $applicant && $applicant->dob ? $applicant->dob->format('Y-m-d') : '' }}',
-          phoneNumber: '{{ $applicant->phone_number ?? '' }}',
-          waveName: '{{ $applicant->wave_name ?? 'Gelombang 1' }}',
-          clusterId: '{{ $applicant->cluster_id ?? '' }}',
-          isBoarding: {{ $applicant && $applicant->is_boarding ? 'true' : 'false' }},
-          parentName: '{{ addslashes($applicant->parent_name ?? '') }}',
-          parentPhone: '{{ $applicant->parent_phone ?? '' }}',
-          parentJob: '{{ addslashes($applicant->parent_job ?? '') }}',
-          hasSibling: {{ $applicant && $applicant->has_sibling_discount ? 'true' : 'false' }},
-          siblingNisn: '{{ $applicant->sibling_nisn ?? '' }}',
-          siblingName: '{{ addslashes($applicant->sibling_name ?? '') }}',
-          baseAmount: {{ $applicant && $applicant->has_sibling_discount ? 240000 : 300000 }}
-      })">
+<body class="bg-slate-900 text-slate-100 min-h-screen selection:bg-teal-500 selection:text-white">
 
-    <!-- Toast Notification Container -->
-    <div x-data="{ toasts: [] }" 
-         @notify.window="toasts.push({ id: Date.now(), message: $event.detail.message, type: $event.detail.type || 'success' }); setTimeout(() => toasts.shift(), 3500)"
-         class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
-        <template x-for="t in toasts" :key="t.id">
-            <div x-transition:enter="transition ease-out duration-300"
-                 x-transition:enter-start="opacity-0 transform translate-y-2"
-                 x-transition:enter-end="opacity-100 transform translate-y-0"
-                 x-transition:leave="transition ease-in duration-200"
-                 x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0"
-                 class="pointer-events-auto px-4 py-3 rounded-2xl shadow-2xl border text-sm font-semibold flex items-center gap-3 backdrop-blur-md"
-                 :class="{
-                     'bg-emerald-950/90 border-emerald-500/50 text-emerald-200': t.type === 'success',
-                     'bg-rose-950/90 border-rose-500/50 text-rose-200': t.type === 'error',
-                     'bg-amber-950/90 border-amber-500/50 text-amber-200': t.type === 'warning',
-                     'bg-teal-950/90 border-teal-500/50 text-teal-200': t.type === 'info'
-                 }">
-                <span x-show="t.type === 'success'">✅</span>
-                <span x-show="t.type === 'error'">⚠️</span>
-                <span x-show="t.type === 'warning'">⚡</span>
-                <span x-text="t.message"></span>
-            </div>
-        </template>
-    </div>
-
-    <!-- Ambient Glow Background -->
+    <!-- Ambient Glow Efek Visual (Emerald & Teal) -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div class="absolute -top-40 -right-40 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl"></div>
-        <div class="absolute top-1/2 -left-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute -top-40 -right-40 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 -left-40 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl"></div>
     </div>
 
-    <!-- Top Navigation Header -->
-    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
-        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-            <a href="{{ route('home') }}" class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-400 p-0.5 shadow-md shadow-teal-500/20">
-                    <div class="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center">
-                        <svg class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                        </svg>
-                    </div>
-                </div>
+    <!-- Header Navigasi -->
+    <header class="bg-slate-800/80 backdrop-blur-md border-b border-slate-700/80 sticky top-0 z-40">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="{{ route('home') }}" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-lg shadow-teal-900">
+                    <i class="fa-solid fa-graduation-cap text-lg"></i>
+                </a>
                 <div>
-                    <span class="block text-sm font-extrabold text-white">PPDB ONLINE</span>
-                    <span class="block text-[10px] font-semibold text-teal-400">1-Minute Fast Registration</span>
+                    <h1 class="font-extrabold text-white leading-tight text-sm sm:text-base">PPDB Online 2026</h1>
+                    <p class="text-[11px] text-teal-400 font-semibold">Formulir Pendaftaran Siswa & Santri Baru</p>
                 </div>
-            </a>
+            </div>
 
-            <div class="flex items-center gap-3">
-                <template x-if="regCode">
-                    <div class="flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 px-3 py-1.5 rounded-xl">
-                        <span class="text-[11px] text-slate-400">Kode:</span>
-                        <span class="font-mono text-xs font-bold text-teal-300" x-text="regCode"></span>
+            <div class="flex items-center space-x-3">
+                @if(session()->has('applicant_id') || $applicant)
+                    <div class="hidden sm:flex flex-col text-right">
+                        <span class="text-[10px] text-slate-400">Kode Registrasi:</span>
+                        <span class="text-xs font-mono font-bold text-teal-400">{{ $applicant?->reg_code ?? 'Draft Tersimpan' }}</span>
                     </div>
-                </template>
-                <a href="{{ route('home') }}" class="text-xs text-slate-400 hover:text-white px-2 py-1">Batal</a>
+                    <form action="{{ route('pendaftar.logout') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="text-xs text-rose-400 hover:text-white font-bold px-3 py-1.5 rounded-lg border border-rose-900/60 bg-rose-950/40 hover:bg-rose-900 transition">
+                            <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Keluar
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('pendaftar.login') }}" class="text-xs text-teal-300 hover:text-white font-bold px-3 py-1.5 rounded-lg border border-teal-800 bg-teal-950/40 hover:bg-teal-900 transition">
+                        <i class="fa-solid fa-key mr-1"></i> Masuk Akun
+                    </a>
+                @endif
             </div>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto px-4 py-8 sm:py-12 space-y-8">
+    <!-- Main Container Multistep Wizard -->
+    <main class="max-w-4xl mx-auto px-4 py-8"
+          x-data="{
+              step: {{ $applicant ? ($applicant->status === 'draft' ? ($applicant->cluster_id ? 3 : 2) : 1) : 1 }},
+              regCode: '{{ $applicant?->reg_code ?? '' }}',
+              selectedCluster: {{ $applicant?->cluster_id ?? 'null' }},
+              isBoarding: {{ $applicant && $applicant->is_boarding ? '1' : '0' }},
+              hasSibling: {{ $applicant && $applicant->has_sibling_discount ? '1' : '0' }},
+              siblingNisn: '{{ $applicant?->sibling_nisn ?? '' }}',
+              siblingChecking: false,
+              siblingMessage: '',
+              siblingValid: false,
+              docs: {
+                  kk: '{{ isset($documents['kk']) ? asset('storage/'.$documents['kk']->file_path) : '' }}',
+                  akta: '{{ isset($documents['akta']) ? asset('storage/'.$documents['akta']->file_path) : '' }}',
+                  skl: '{{ isset($documents['skl']) ? asset('storage/'.$documents['skl']->file_path) : '' }}'
+              },
+              checkSiblingDiscount() {
+                  if (this.siblingNisn.length < 5) return;
+                  this.siblingChecking = true;
+                  fetch('{{ route('pendaftar.check_sibling') }}', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json',
+                          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                      },
+                      body: JSON.stringify({ nisn: this.siblingNisn })
+                  })
+                  .then(res => res.json())
+                  .then(data => {
+                      this.siblingChecking = false;
+                      if (data.success) {
+                          this.siblingValid = true;
+                          this.hasSibling = 1;
+                          this.siblingMessage = data.message;
+                      } else {
+                          this.siblingValid = false;
+                          this.siblingMessage = data.message || 'NISN kakak tidak terdaftar di sistem sekolah.';
+                      }
+                  })
+                  .catch(() => {
+                      this.siblingChecking = false;
+                      this.siblingMessage = 'Gagal memverifikasi NISN.';
+                  });
+              }
+          }">
 
-        <!-- Stepper Progress Bar Header -->
-        <div class="bg-slate-850 border border-slate-700/80 rounded-3xl p-6 sm:p-8 shadow-xl">
-            <div class="flex items-center justify-between mb-4">
-                <div>
-                    <span class="text-xs font-bold text-teal-400 uppercase tracking-wider block">Langkah <span x-text="currentStep"></span> dari 3</span>
-                    <h1 class="text-xl sm:text-2xl font-extrabold text-white mt-0.5" x-text="getStepTitle()"></h1>
-                </div>
-                <div class="text-right">
-                    <span class="text-2xl sm:text-3xl font-extrabold font-mono text-teal-400" x-text="getProgressPercent() + '%'"></span>
-                    <span class="text-[11px] text-slate-400 block font-medium" x-text="getProgressText()"></span>
+        <!-- Notifikasi Flash Message -->
+        @if(session('success'))
+            <div class="mb-6 p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-200 flex items-start space-x-3 shadow-lg">
+                <i class="fa-solid fa-circle-check text-emerald-400 text-lg mt-0.5"></i>
+                <div class="text-xs">
+                    <h4 class="font-bold text-sm text-emerald-300">Berhasil!</h4>
+                    <p class="mt-0.5">{{ session('success') }}</p>
                 </div>
             </div>
+        @endif
 
-            <!-- Visual Bar -->
-            <div class="w-full h-3 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700/50">
-                <div class="h-full bg-gradient-to-r from-teal-500 to-emerald-400 rounded-full transition-all duration-500 ease-out shadow-sm"
-                     :style="'width: ' + getProgressPercent() + '%'"></div>
+        @if(session('error') || $errors->any())
+            <div class="mb-6 p-4 rounded-2xl bg-rose-950/80 border border-rose-500/40 text-rose-200 flex items-start space-x-3 shadow-lg">
+                <i class="fa-solid fa-triangle-exclamation text-rose-400 text-lg mt-0.5"></i>
+                <div class="text-xs">
+                    <h4 class="font-bold text-sm text-rose-300">Peringatan:</h4>
+                    <p class="mt-0.5">{{ session('error') ?? $errors->first() }}</p>
+                </div>
             </div>
+        @endif
 
-            <!-- Stepper Horizontal Icons -->
-            <div class="grid grid-cols-3 gap-2 mt-6 pt-6 border-t border-slate-800 text-xs text-center">
-                <!-- Step 1 Icon -->
-                <div class="flex flex-col items-center gap-1.5"
-                     :class="currentStep >= 1 ? 'text-teal-400 font-bold' : 'text-slate-400'">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all"
-                         :class="currentStep > 1 ? 'bg-emerald-500 text-white' : (currentStep === 1 ? 'bg-teal-500 text-white ring-4 ring-teal-500/20' : 'bg-slate-800 text-slate-400')">
-                        <span x-show="currentStep > 1">✓</span>
-                        <span x-show="currentStep <= 1">1</span>
-                    </div>
-                    <span>Data & Klaster</span>
-                </div>
+        <!-- Stepper Visual Progress Bar -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between relative">
+                <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-slate-800 w-full z-0"></div>
+                <div class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300 z-0"
+                     :style="step === 1 ? 'width: 0%' : (step === 2 ? 'width: 50%' : 'width: 100%')"></div>
 
-                <!-- Step 2 Icon -->
-                <div class="flex flex-col items-center gap-1.5"
-                     :class="currentStep >= 2 ? 'text-teal-400 font-bold' : 'text-slate-400'">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all"
-                         :class="currentStep > 2 ? 'bg-emerald-500 text-white' : (currentStep === 2 ? 'bg-teal-500 text-white ring-4 ring-teal-500/20' : 'bg-slate-800 text-slate-400')">
-                        <span x-show="currentStep > 2">✓</span>
-                        <span x-show="currentStep <= 2">2</span>
+                <!-- Step 1 Button -->
+                <button type="button" @click="step = 1" class="relative z-10 flex flex-col items-center group">
+                    <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm transition-all duration-200 shadow-md"
+                         :class="step >= 1 ? 'bg-emerald-600 text-white ring-4 ring-emerald-500/30' : 'bg-slate-800 text-slate-500'">
+                        <i class="fa-solid" :class="step > 1 ? 'fa-check' : 'fa-user'"></i>
                     </div>
-                    <span>Pembayaran</span>
-                </div>
+                    <span class="text-xs font-bold mt-2" :class="step >= 1 ? 'text-teal-400' : 'text-slate-500'">1. Data Utama</span>
+                    <span class="text-[10px] text-slate-400 hidden sm:block">Kunci Kuota 1-Menit</span>
+                </button>
 
-                <!-- Step 3 Icon -->
-                <div class="flex flex-col items-center gap-1.5"
-                     :class="currentStep >= 3 ? 'text-teal-400 font-bold' : 'text-slate-400'">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all"
-                         :class="currentStep === 3 ? 'bg-teal-500 text-white ring-4 ring-teal-500/20' : 'bg-slate-800 text-slate-400'">
-                        <span>3</span>
+                <!-- Step 2 Button -->
+                <button type="button" @click="if(regCode) step = 2" class="relative z-10 flex flex-col items-center group">
+                    <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm transition-all duration-200 shadow-md"
+                         :class="step >= 2 ? 'bg-emerald-600 text-white ring-4 ring-emerald-500/30' : 'bg-slate-800 text-slate-500'">
+                        <i class="fa-solid" :class="step > 2 ? 'fa-check' : 'fa-shapes'"></i>
                     </div>
-                    <span>Upload Berkas</span>
-                </div>
+                    <span class="text-xs font-bold mt-2" :class="step >= 2 ? 'text-teal-400' : 'text-slate-500'">2. Klaster & Asrama</span>
+                    <span class="text-[10px] text-slate-400 hidden sm:block">Kurikulum Merdeka</span>
+                </button>
+
+                <!-- Step 3 Button -->
+                <button type="button" @click="if(regCode && selectedCluster) step = 3" class="relative z-10 flex flex-col items-center group">
+                    <div class="w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-sm transition-all duration-200 shadow-md"
+                         :class="step === 3 ? 'bg-emerald-600 text-white ring-4 ring-emerald-500/30' : 'bg-slate-800 text-slate-500'">
+                        <i class="fa-solid fa-camera"></i>
+                    </div>
+                    <span class="text-xs font-bold mt-2" :class="step === 3 ? 'text-teal-400' : 'text-slate-500'">3. Unggah Berkas</span>
+                    <span class="text-[10px] text-slate-400 hidden sm:block">Kamera HP Langsung</span>
+                </button>
             </div>
         </div>
 
         <!-- ========================================== -->
-        <!-- STEP 1: KUNCI KUOTA & KLASTER (< 1 MENIT)  -->
+        <!-- STEP 1: DATA UTAMA & KUNCI KUOTA INSTAN    -->
         <!-- ========================================== -->
-        <div x-show="currentStep === 1" 
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 translate-y-4"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             class="bg-slate-850 border border-slate-700/80 rounded-3xl p-6 sm:p-10 shadow-xl space-y-6">
-
-            <div class="border-b border-slate-700/60 pb-4">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/10 text-teal-400 text-xs font-bold uppercase tracking-wider mb-2">
-                    Langkah 1: Kunci Kuota & Kurikulum
-                </span>
-                <h2 class="text-xl sm:text-2xl font-bold text-white">Identitas Singkat & Pilihan Klaster</h2>
-                <p class="text-slate-300 text-xs sm:text-sm mt-1">Cukup isi data pokok di bawah untuk langsung mengamankan nomor kuota.</p>
+        <div x-show="step === 1" x-cloak class="bg-slate-800/90 rounded-3xl border border-slate-700/80 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+            <div class="border-b border-slate-700 pb-4 mb-6">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-teal-400 bg-teal-950/70 border border-teal-800 px-3 py-1 rounded-full">Langkah 1 dari 3</span>
+                <h2 class="text-xl font-black text-white mt-2">Data Diri Calon Siswa (Kunci Kuota 1-Menit)</h2>
+                <p class="text-xs text-slate-400 mt-1">Masukkan NIK dan Nomor WhatsApp aktif untuk mengunci kursi kuota pendaftaran secara otomatis.</p>
             </div>
 
-            <form @submit.prevent="submitStep1" class="space-y-6">
-                <!-- Data Calon Siswa -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form action="{{ route('pendaftar.step1') }}" method="POST">
+                @csrf
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <!-- NIK Siswa -->
                     <div class="sm:col-span-2">
-                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Nama Lengkap Siswa *</label>
-                        <input type="text" x-model="fullName" required placeholder="Sesuai Akta Kelahiran / Ijazah"
-                               class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 text-sm">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">NIK 16 Digit *</label>
-                        <input type="text" x-model="nik" required maxlength="16" pattern="\d{16}" inputmode="numeric" placeholder="16 digit sesuai Kartu Keluarga"
-                               class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 font-mono text-sm">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">Tanggal Lahir *</label>
-                        <input type="date" x-model="dob" required
-                               class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 text-sm">
-                    </div>
-
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">No. WhatsApp / HP Aktif *</label>
-                        <input type="text" x-model="phoneNumber" required placeholder="Contoh: 081234567890 (Untuk notifikasi kelulusan)"
-                               class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-teal-500 text-sm">
-                    </div>
-                </div>
-
-                <!-- Pilihan Klaster Kurikulum Merdeka (Card Interactive Selection) -->
-                <div class="pt-4 border-t border-slate-800 space-y-3">
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                        Pilih Klaster Kurikulum Merdeka *
-                    </label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                        @foreach($clusters as $cluster)
-                            <div @click="clusterId = '{{ $cluster->id }}'"
-                                 :class="clusterId == '{{ $cluster->id }}' ? 'bg-teal-950/60 border-teal-500 ring-2 ring-teal-500/30 shadow-lg' : 'bg-slate-900/80 border-slate-700 hover:border-slate-600'"
-                                 class="p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between">
-                                <div>
-                                    <div class="flex items-center justify-between mb-1.5">
-                                        <h3 class="font-bold text-sm text-white">{{ $cluster->name }}</h3>
-                                        <span class="text-[11px] font-mono font-bold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300">
-                                            Kuota {{ $cluster->quota }}
-                                        </span>
-                                    </div>
-                                    <p class="text-xs text-slate-400 leading-relaxed">{{ $cluster->description }}</p>
-                                </div>
-                                <div class="mt-3 pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
-                                    <span class="text-slate-400">Pilihan Rumpun</span>
-                                    <span class="font-bold" :class="clusterId == '{{ $cluster->id }}' ? 'text-teal-400' : 'text-slate-400'">
-                                        <span x-show="clusterId == '{{ $cluster->id }}'">✓ Terpilih</span>
-                                        <span x-show="clusterId != '{{ $cluster->id }}'">Pilih</span>
-                                    </span>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-
-                <!-- Status Asrama / Mukim -->
-                <div class="pt-4 border-t border-slate-800 space-y-3">
-                    <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                        Status Asrama / Mukim *
-                    </label>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                        <div @click="isBoarding = true"
-                             :class="isBoarding ? 'bg-teal-950/60 border-teal-500 ring-2 ring-teal-500/30' : 'bg-slate-900/80 border-slate-700 hover:border-slate-600'"
-                             class="p-4 rounded-2xl border transition-all cursor-pointer">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-base">🕌</span>
-                                <h3 class="font-bold text-sm text-white">Santri Mukim (Tinggal di Pesantren)</h3>
-                            </div>
-                            <p class="text-xs text-slate-400">Mendapatkan asrama pondok, pembinaan 24 jam & tahfidz intensif.</p>
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">
+                            Nomor Induk Kependudukan (NIK 16 Digit) <span class="text-rose-400">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                                <i class="fa-solid fa-id-card"></i>
+                            </span>
+                            <input type="text" name="nik" maxlength="16" required
+                                   value="{{ old('nik', $applicant?->nik) }}"
+                                   placeholder="Contoh: 3302010101080001"
+                                   class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500 font-mono tracking-wider">
                         </div>
+                        <p class="text-[11px] text-slate-400 mt-1">Sesuai Kartu Keluarga (KK). Digunakan sebagai ID masuk portal tanpa password.</p>
+                    </div>
 
-                        <div @click="isBoarding = false"
-                             :class="!isBoarding ? 'bg-teal-950/60 border-teal-500 ring-2 ring-teal-500/30' : 'bg-slate-900/80 border-slate-700 hover:border-slate-600'"
-                             class="p-4 rounded-2xl border transition-all cursor-pointer">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="text-base">🏡</span>
-                                <h3 class="font-bold text-sm text-white">Santri Non-Mukim (Pulang-Pergi)</h3>
-                            </div>
-                            <p class="text-xs text-slate-400">Mengikuti jam belajar reguler sekolah tanpa menetap di asrama.</p>
+                    <!-- Nama Lengkap -->
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">
+                            Nama Lengkap Calon Siswa <span class="text-rose-400">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                            <input type="text" name="full_name" required
+                                   value="{{ old('full_name', $applicant?->full_name) }}"
+                                   placeholder="Nama lengkap sesuai Akta Kelahiran / Ijazah"
+                                   class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500">
                         </div>
                     </div>
+
+                    <!-- Tanggal Lahir -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">
+                            Tanggal Lahir Calon Siswa <span class="text-rose-400">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                                <i class="fa-regular fa-calendar"></i>
+                            </span>
+                            <input type="date" name="dob" required
+                                   value="{{ old('dob', $applicant?->dob ? $applicant->dob->format('Y-m-d') : '') }}"
+                                   class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+
+                    <!-- No WhatsApp / HP -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">
+                            No. WhatsApp Aktif (Ortu / Siswa) <span class="text-rose-400">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
+                                <i class="fa-brands fa-whatsapp text-emerald-400"></i>
+                            </span>
+                            <input type="tel" name="phone_number" required
+                                   value="{{ old('phone_number', $applicant?->phone_number) }}"
+                                   placeholder="081234567890"
+                                   class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500">
+                        </div>
+                    </div>
+
+                    <!-- Gelombang Pendaftaran -->
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">Gelombang Pendaftaran</label>
+                        <select name="wave_name" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500">
+                            <option value="Gelombang 1" {{ ($applicant?->wave_name ?? 'Gelombang 1') === 'Gelombang 1' ? 'selected' : '' }}>Gelombang 1 (Jalur Prestasi & Reguler Awal - Potongan Rp 50.000)</option>
+                            <option value="Gelombang 2" {{ ($applicant?->wave_name ?? '') === 'Gelombang 2' ? 'selected' : '' }}>Gelombang 2 (Reguler)</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="pt-4 flex justify-end">
-                    <button type="submit" 
-                            :disabled="loading"
-                            class="min-h-[50px] w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 disabled:opacity-60 text-white font-bold rounded-2xl shadow-lg shadow-teal-500/30 transition-all flex items-center justify-center gap-2 cursor-pointer">
-                        <span x-show="!loading">Lanjut ke Pilihan Pembayaran (Step 2) →</span>
-                        <span x-show="loading" class="inline-flex items-center gap-2" style="display:none;">
-                            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                            <span>Menyimpan & Mengunci Kuota...</span>
-                        </span>
+                <div class="mt-8 flex justify-end">
+                    <button type="submit" class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-teal-950 transition">
+                        <span>Lanjut ke Klaster & Asrama</span>
+                        <i class="fa-solid fa-arrow-right ml-2"></i>
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- ========================================== -->
-        <!-- STEP 2: PILIHAN PEMBAYARAN & SIBLING       -->
-        <!-- ========================================== -->
-        <div x-show="currentStep === 2" 
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 translate-y-4"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             style="display: none;"
-             class="bg-slate-850 border border-slate-700/80 rounded-3xl p-6 sm:p-10 shadow-xl space-y-6">
-
-            <div class="border-b border-slate-700/60 pb-4">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
-                    Langkah 2: Opsi Pembayaran
-                </span>
-                <h2 class="text-xl sm:text-2xl font-bold text-white">Biaya Pendaftaran & Metode Pembayaran</h2>
-                <p class="text-slate-300 text-xs sm:text-sm mt-1">Nominal resmi bulat Rp 300.000 tanpa biaya admin tersembunyi.</p>
+        <!-- ================================================= -->
+        <!-- STEP 2: KLASTER KURIKULUM MERDEKA & STATUS ASRAMA -->
+        <!-- ================================================= -->
+        <div x-show="step === 2" x-cloak class="bg-slate-800/90 rounded-3xl border border-slate-700/80 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+            <div class="border-b border-slate-700 pb-4 mb-6">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-teal-400 bg-teal-950/70 border border-teal-800 px-3 py-1 rounded-full">Langkah 2 dari 3</span>
+                <h2 class="text-xl font-black text-white mt-2">Peminatan Klaster & Program Asrama</h2>
+                <p class="text-xs text-slate-400 mt-1">Pilih klaster mata pelajaran Kurikulum Merdeka yang diminati serta program mukim santri.</p>
             </div>
 
-            <!-- Diskon Sibling Auto Check -->
-            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-700/80 space-y-3">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h3 class="text-sm font-bold text-white">Punya Kakak yang Bersekolah di Sini?</h3>
-                        <p class="text-xs text-slate-400">Dapatkan diskon khusus saudara kandung 20% otomatis.</p>
-                    </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" x-model="hasSibling" class="sr-only peer">
-                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-600"></div>
+            <form action="{{ route('pendaftar.step2') }}" method="POST">
+                @csrf
+                <input type="hidden" name="cluster_id" :value="selectedCluster">
+                <input type="hidden" name="is_boarding" :value="isBoarding">
+
+                <!-- Klaster Card Selection -->
+                <div class="mb-8">
+                    <label class="block text-xs font-bold text-slate-300 mb-3">
+                        Pilih Klaster Peminatan Kurikulum Merdeka <span class="text-rose-400">*</span>
                     </label>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        @forelse($clusters as $c)
+                            <div @click="selectedCluster = {{ $c->id }}"
+                                 class="cursor-pointer border-2 rounded-2xl p-4 transition-all duration-200 relative flex flex-col justify-between"
+                                 :class="selectedCluster === {{ $c->id }} ? 'border-teal-500 bg-teal-950/60 shadow-lg ring-2 ring-teal-500/30' : 'border-slate-700 bg-slate-900/60 hover:border-slate-600'">
+                                <div class="flex items-start justify-between">
+                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg mb-3"
+                                         :class="selectedCluster === {{ $c->id }} ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-400'">
+                                        @if(str_contains(strtolower($c->name), 'agama') || str_contains(strtolower($c->name), 'islam'))
+                                            <i class="fa-solid fa-book-quran"></i>
+                                        @elseif(str_contains(strtolower($c->name), 'stem') || str_contains(strtolower($c->name), 'ipa'))
+                                            <i class="fa-solid fa-atom"></i>
+                                        @elseif(str_contains(strtolower($c->name), 'sos'))
+                                            <i class="fa-solid fa-landmark"></i>
+                                        @else
+                                            <i class="fa-solid fa-briefcase"></i>
+                                        @endif
+                                    </div>
+                                    <div class="w-5 h-5 rounded-full border flex items-center justify-center"
+                                         :class="selectedCluster === {{ $c->id }} ? 'border-teal-500 bg-teal-500 text-slate-950' : 'border-slate-600'">
+                                        <i class="fa-solid fa-check text-[10px]" x-show="selectedCluster === {{ $c->id }}"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3 class="font-extrabold text-white text-sm">{{ $c->name }}</h3>
+                                    <p class="text-xs text-slate-400 mt-1 line-clamp-2">{{ $c->description ?? 'Peminatan akademik dengan pendalaman kurikulum.' }}</p>
+                                    <div class="mt-3 flex items-center justify-between text-[11px] font-semibold text-teal-400">
+                                        <span>Kuota Tersedia: {{ $c->quota ?? 30 }} Kursi</span>
+                                        <span class="bg-teal-950 border border-teal-800 text-teal-300 px-2 py-0.5 rounded-full text-[10px]">Tersedia</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div @click="selectedCluster = 1"
+                                 class="cursor-pointer border-2 rounded-2xl p-4 transition-all"
+                                 :class="selectedCluster === 1 ? 'border-teal-500 bg-teal-950/60' : 'border-slate-700 bg-slate-900/60'">
+                                <h3 class="font-bold text-white text-sm">Klaster Keagamaan & Tahfidz</h3>
+                                <p class="text-xs text-slate-400 mt-1">Fokus Al-Qur'an, Hadist, Bahasa Arab & Kitab Kuning.</p>
+                            </div>
+                            <div @click="selectedCluster = 2"
+                                 class="cursor-pointer border-2 rounded-2xl p-4 transition-all"
+                                 :class="selectedCluster === 2 ? 'border-teal-500 bg-teal-950/60' : 'border-slate-700 bg-slate-900/60'">
+                                <h3 class="font-bold text-white text-sm">Klaster STEM & Sains Terapan</h3>
+                                <p class="text-xs text-slate-400 mt-1">Fokus Matematika, Fisika, Biologi, Coding & Robotika.</p>
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
 
-                <div x-show="hasSibling" class="pt-3 border-t border-slate-800 space-y-2">
-                    <label class="block text-xs font-semibold text-slate-300">Masukkan 10 Digit NISN Kakak:</label>
-                    <div class="flex gap-2">
-                        <input type="text" x-model="siblingNisn" maxlength="10" placeholder="Contoh: 0071234567"
-                               class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-teal-500">
-                        <button type="button" @click="verifySibling" class="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold shrink-0">
-                            Cek NISN
+                <!-- Pilihan Asrama / Santri Mukim -->
+                <div class="mb-8 p-5 rounded-2xl bg-slate-900/70 border border-slate-700">
+                    <label class="block text-xs font-bold text-slate-300 mb-2">Program Tempat Tinggal Siswa</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button type="button" @click="isBoarding = 1"
+                                class="p-4 rounded-xl border-2 text-left transition flex items-center space-x-3"
+                                :class="isBoarding === 1 ? 'border-teal-500 bg-teal-950/40 ring-2 ring-teal-500/20' : 'border-slate-800 bg-slate-900'">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center font-bold"
+                                 :class="isBoarding === 1 ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-500'">
+                                <i class="fa-solid fa-hotel"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-white">Santri Mukim (Asrama)</h4>
+                                <p class="text-[11px] text-slate-400">Tinggal di Asrama Pesantren</p>
+                            </div>
+                        </button>
+
+                        <button type="button" @click="isBoarding = 0"
+                                class="p-4 rounded-xl border-2 text-left transition flex items-center space-x-3"
+                                :class="isBoarding === 0 ? 'border-teal-500 bg-teal-950/40 ring-2 ring-teal-500/20' : 'border-slate-800 bg-slate-900'">
+                            <div class="w-10 h-10 rounded-lg flex items-center justify-center font-bold"
+                                 :class="isBoarding === 0 ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-500'">
+                                <i class="fa-solid fa-house-user"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-white">Non-Mukim (Reguler PP)</h4>
+                                <p class="text-[11px] text-slate-400">Tinggal bersama orang tua</p>
+                            </div>
                         </button>
                     </div>
-                    <div x-show="siblingVerified" class="text-xs text-emerald-400 font-semibold flex items-center gap-1.5" style="display: none;">
-                        <span>✓</span> Kakak ditemukan: <span x-text="siblingName"></span> (Diskon 20% Diterapkan!)
-                    </div>
-                </div>
-            </div>
-
-            <!-- Total Biaya Card -->
-            <div class="p-6 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-teal-500/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                    <span class="text-xs text-slate-400 block">Total Tagihan Formulir</span>
-                    <div class="flex items-baseline gap-3">
-                        <span class="text-3xl font-extrabold font-mono text-emerald-400" x-text="formatRupiah(baseAmount)">Rp 300.000</span>
-                        <template x-if="hasSibling">
-                            <span class="text-xs line-through text-slate-400 font-mono">Rp 300.000</span>
-                        </template>
-                    </div>
                 </div>
 
-                <!-- Copy Amount Button -->
-                <button type="button" 
-                        @click="copyText(baseAmount, 'Nominal tagihan berhasil disalin!')"
-                        class="px-4 py-2.5 bg-slate-800 hover:bg-slate-750 border border-slate-700 text-teal-300 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                    <span>Salin Nominal & Kode</span>
-                </button>
-            </div>
-
-            <!-- Two Payment Methods Selection -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- Method 1: Transfer Bank Online -->
-                <div @click="paymentMethod = 'transfer'" 
-                     :class="paymentMethod === 'transfer' ? 'bg-teal-950/60 border-teal-500 ring-2 ring-teal-500/30' : 'bg-slate-900/80 border-slate-700 hover:border-slate-600'"
-                     class="p-5 rounded-2xl border transition-all cursor-pointer space-y-3">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xl">💳</span>
-                            <h3 class="font-bold text-sm text-white">Transfer Bank Online</h3>
-                        </div>
-                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300">Rekomendasi</span>
-                    </div>
-                    <p class="text-xs text-slate-400">Transfer ke rekening resmi BSI / Mandiri / BRI sekolah, lalu unggah struk.</p>
-                    
-                    <div class="pt-2 border-t border-slate-800 text-xs text-slate-300 space-y-1">
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">BSI Syariah</span>
-                            <span class="font-mono font-bold text-white">7123456789</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-slate-400">Mandiri</span>
-                            <span class="font-mono font-bold text-white">1370009876543</span>
-                        </div>
-                    </div>
+                <div class="flex items-center justify-between pt-4 border-t border-slate-700">
+                    <button type="button" @click="step = 1" class="px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 text-xs font-bold hover:bg-slate-800 transition">
+                        <i class="fa-solid fa-arrow-left mr-1"></i> Kembali
+                    </button>
+                    <button type="submit" :disabled="!selectedCluster"
+                            class="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-lg shadow-teal-950 transition disabled:opacity-50">
+                        <span>Lanjut ke Berkas Persyaratan</span>
+                        <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
                 </div>
-
-                <!-- Method 2: Bayar Tunai di Loket Sekolah -->
-                <div @click="paymentMethod = 'cash'" 
-                     :class="paymentMethod === 'cash' ? 'bg-teal-950/60 border-teal-500 ring-2 ring-teal-500/30' : 'bg-slate-900/80 border-slate-700 hover:border-slate-600'"
-                     class="p-5 rounded-2xl border transition-all cursor-pointer space-y-3">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xl">💵</span>
-                            <h3 class="font-bold text-sm text-white">Bayar Tunai di Loket Sekolah</h3>
-                        </div>
-                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">Kasir Offline</span>
-                    </div>
-                    <p class="text-xs text-slate-400">Datang langsung ke bendahara sekolah dengan membawa Kode Registrasi.</p>
-                    <div class="pt-2 border-t border-slate-800 text-xs text-slate-400">
-                        Loket buka: Senin - Sabtu (08.00 - 14.00 WIB)
-                    </div>
-                </div>
-            </div>
-
-            <!-- Step Navigation -->
-            <div class="pt-4 flex items-center justify-between">
-                <button type="button" @click="currentStep = 1" class="text-xs font-semibold text-slate-400 hover:text-white px-4 py-2">
-                    ← Kembali ke Data Diri
-                </button>
-                <button type="button" 
-                        @click="submitStep2"
-                        class="min-h-[50px] px-8 py-3.5 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white font-bold rounded-2xl shadow-lg shadow-teal-500/30 transition-all flex items-center gap-2 cursor-pointer">
-                    <span>Lanjut ke Upload Berkas (Step 3) →</span>
-                </button>
-            </div>
+            </form>
         </div>
 
-        <!-- ========================================== -->
-        <!-- STEP 3: UPLOAD BERKAS & KAMERA LANGSUNG    -->
-        <!-- ========================================== -->
-        <div x-show="currentStep === 3" 
-             x-transition:enter="transition ease-out duration-300"
-             x-transition:enter-start="opacity-0 translate-y-4"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             style="display: none;"
-             class="bg-slate-850 border border-slate-700/80 rounded-3xl p-6 sm:p-10 shadow-xl space-y-6">
-
-            <div class="border-b border-slate-700/60 pb-4">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-500/10 text-teal-400 text-xs font-bold uppercase tracking-wider mb-2">
-                    Langkah 3: Unggah Berkas Persyaratan
-                </span>
-                <h2 class="text-xl sm:text-2xl font-bold text-white">Foto & Pratinjau Dokumen</h2>
-                <p class="text-slate-300 text-xs sm:text-sm mt-1">Dapat difoto langsung menggunakan kamera HP tanpa perlu scanner.</p>
+        <!-- ============================================== -->
+        <!-- STEP 3: UNGGAH FOTO BERKAS (KAMERA HP LANGSUNG) -->
+        <!-- ============================================== -->
+        <div x-show="step === 3" x-cloak class="bg-slate-800/90 rounded-3xl border border-slate-700/80 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+            <div class="border-b border-slate-700 pb-4 mb-6">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-teal-400 bg-teal-950/70 border border-teal-800 px-3 py-1 rounded-full">Langkah 3 dari 3</span>
+                <h2 class="text-xl font-black text-white mt-2">Unggah Berkas via Kamera HP Langsung</h2>
+                <p class="text-xs text-slate-400 mt-1">Gunakan tombol foto untuk langsung membuka kamera belakang HP Anda tanpa perlu scanner dokumen.</p>
             </div>
 
-            <!-- Upload Slots -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- Slot KK -->
-                <div class="p-4 rounded-2xl bg-slate-900 border border-slate-700/80 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-white uppercase tracking-wider">1. Kartu Keluarga (KK) *</span>
-                        <span class="text-[10px] text-teal-400 font-mono">Wajib</span>
+            <!-- Upload Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+                <!-- 1. Kartu Keluarga (KK) -->
+                <div class="border-2 border-dashed border-slate-700 rounded-2xl p-4 text-center hover:border-teal-500 transition relative bg-slate-900/60 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 mx-auto rounded-full bg-emerald-950 text-emerald-400 flex items-center justify-center text-lg mb-3">
+                            <i class="fa-solid fa-people-roof"></i>
+                        </div>
+                        <h4 class="font-bold text-xs text-white">Kartu Keluarga (KK) <span class="text-rose-400">*</span></h4>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Format JPG/PNG/PDF (Maks 2MB)</p>
+
+                        <div class="mt-3">
+                            <template x-if="docs.kk">
+                                <div class="relative rounded-lg overflow-hidden border border-teal-500">
+                                    <img :src="docs.kk" class="w-full h-24 object-cover">
+                                    <span class="absolute top-1 right-1 bg-emerald-600 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">Terunggah</span>
+                                </div>
+                            </template>
+                            <template x-if="!docs.kk">
+                                <div class="h-24 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-500 text-xs">
+                                    <span>Belum ada foto</span>
+                                </div>
+                            </template>
+                        </div>
                     </div>
 
-                    <div class="relative border-2 border-dashed border-slate-700 rounded-xl p-4 text-center hover:border-teal-500 transition-colors bg-slate-850">
-                        <template x-if="previews.kk">
-                            <div class="space-y-2">
-                                <img :src="previews.kk" class="h-28 mx-auto rounded-lg object-contain shadow-md">
-                                <span class="text-[11px] text-emerald-400 block font-semibold">✓ Siap diunggah</span>
-                            </div>
-                        </template>
-                        <template x-if="!previews.kk">
-                            <div class="space-y-2 py-2">
-                                <svg class="w-8 h-8 text-slate-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                <span class="text-xs text-slate-400 block">Ambil Foto / Pilih Berkas</span>
-                            </div>
-                        </template>
-
-                        <!-- Input File with camera capture support -->
-                        <input type="file" 
-                               accept="image/*,application/pdf"
-                               capture="environment"
-                               @change="handleFileChange($event, 'kk')"
-                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                    </div>
+                    <form action="{{ route('pendaftar.upload_document') }}" method="POST" enctype="multipart/form-data" class="mt-4">
+                        @csrf
+                        <input type="hidden" name="doc_type" value="kk">
+                        <label class="cursor-pointer w-full inline-flex items-center justify-center px-3 py-2 rounded-xl bg-slate-800 border border-teal-500/50 text-teal-300 hover:bg-slate-700 text-xs font-bold transition shadow-sm">
+                            <i class="fa-solid fa-camera mr-1.5 text-sm"></i>
+                            <span>Foto / Pilih KK</span>
+                            <input type="file" name="file" accept="image/*" capture="environment" class="hidden" onchange="this.form.submit()">
+                        </label>
+                    </form>
                 </div>
 
-                <!-- Slot Akta -->
-                <div class="p-4 rounded-2xl bg-slate-900 border border-slate-700/80 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-white uppercase tracking-wider">2. Akta Kelahiran *</span>
-                        <span class="text-[10px] text-teal-400 font-mono">Wajib</span>
+                <!-- 2. Akta Kelahiran -->
+                <div class="border-2 border-dashed border-slate-700 rounded-2xl p-4 text-center hover:border-teal-500 transition relative bg-slate-900/60 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 mx-auto rounded-full bg-blue-950 text-blue-400 flex items-center justify-center text-lg mb-3">
+                            <i class="fa-solid fa-file-lines"></i>
+                        </div>
+                        <h4 class="font-bold text-xs text-white">Akta Kelahiran <span class="text-rose-400">*</span></h4>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Format JPG/PNG/PDF (Maks 2MB)</p>
+
+                        <div class="mt-3">
+                            <template x-if="docs.akta">
+                                <div class="relative rounded-lg overflow-hidden border border-teal-500">
+                                    <img :src="docs.akta" class="w-full h-24 object-cover">
+                                    <span class="absolute top-1 right-1 bg-emerald-600 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">Terunggah</span>
+                                </div>
+                            </template>
+                            <template x-if="!docs.akta">
+                                <div class="h-24 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-500 text-xs">
+                                    <span>Belum ada foto</span>
+                                </div>
+                            </template>
+                        </div>
                     </div>
 
-                    <div class="relative border-2 border-dashed border-slate-700 rounded-xl p-4 text-center hover:border-teal-500 transition-colors bg-slate-850">
-                        <template x-if="previews.akta">
-                            <div class="space-y-2">
-                                <img :src="previews.akta" class="h-28 mx-auto rounded-lg object-contain shadow-md">
-                                <span class="text-[11px] text-emerald-400 block font-semibold">✓ Siap diunggah</span>
-                            </div>
-                        </template>
-                        <template x-if="!previews.akta">
-                            <div class="space-y-2 py-2">
-                                <svg class="w-8 h-8 text-slate-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                <span class="text-xs text-slate-400 block">Ambil Foto / Pilih Berkas</span>
-                            </div>
-                        </template>
-
-                        <input type="file" 
-                               accept="image/*,application/pdf"
-                               capture="environment"
-                               @change="handleFileChange($event, 'akta')"
-                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                    </div>
+                    <form action="{{ route('pendaftar.upload_document') }}" method="POST" enctype="multipart/form-data" class="mt-4">
+                        @csrf
+                        <input type="hidden" name="doc_type" value="akta">
+                        <label class="cursor-pointer w-full inline-flex items-center justify-center px-3 py-2 rounded-xl bg-slate-800 border border-blue-500/50 text-blue-300 hover:bg-slate-700 text-xs font-bold transition shadow-sm">
+                            <i class="fa-solid fa-camera mr-1.5 text-sm"></i>
+                            <span>Foto / Pilih Akta</span>
+                            <input type="file" name="file" accept="image/*" capture="environment" class="hidden" onchange="this.form.submit()">
+                        </label>
+                    </form>
                 </div>
 
-                <!-- Slot SKL / Ijazah -->
-                <div class="p-4 rounded-2xl bg-slate-900 border border-slate-700/80 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-white uppercase tracking-wider">3. SKL / Ijazah SMP</span>
-                        <span class="text-[10px] text-slate-400 font-mono">Bisa Menyusul</span>
+                <!-- 3. Surat Keterangan Lulus (SKL) -->
+                <div class="border-2 border-dashed border-slate-700 rounded-2xl p-4 text-center hover:border-teal-500 transition relative bg-slate-900/60 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 mx-auto rounded-full bg-amber-950 text-amber-400 flex items-center justify-center text-lg mb-3">
+                            <i class="fa-solid fa-certificate"></i>
+                        </div>
+                        <h4 class="font-bold text-xs text-white">SKL / Surat Keterangan <span class="text-rose-400">*</span></h4>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Surat Keterangan Lulus / Aktif</p>
+
+                        <div class="mt-3">
+                            <template x-if="docs.skl">
+                                <div class="relative rounded-lg overflow-hidden border border-teal-500">
+                                    <img :src="docs.skl" class="w-full h-24 object-cover">
+                                    <span class="absolute top-1 right-1 bg-emerald-600 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">Terunggah</span>
+                                </div>
+                            </template>
+                            <template x-if="!docs.skl">
+                                <div class="h-24 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-center text-slate-500 text-xs">
+                                    <span>Belum ada foto</span>
+                                </div>
+                            </template>
+                        </div>
                     </div>
 
-                    <div class="relative border-2 border-dashed border-slate-700 rounded-xl p-4 text-center hover:border-teal-500 transition-colors bg-slate-850">
-                        <template x-if="previews.skl">
-                            <div class="space-y-2">
-                                <img :src="previews.skl" class="h-28 mx-auto rounded-lg object-contain shadow-md">
-                                <span class="text-[11px] text-emerald-400 block font-semibold">✓ Siap diunggah</span>
-                            </div>
-                        </template>
-                        <template x-if="!previews.skl">
-                            <div class="space-y-2 py-2">
-                                <svg class="w-8 h-8 text-slate-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                <span class="text-xs text-slate-400 block">Ambil Foto / Pilih Berkas</span>
-                            </div>
-                        </template>
-
-                        <input type="file" 
-                               accept="image/*,application/pdf"
-                               capture="environment"
-                               @change="handleFileChange($event, 'skl')"
-                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                    </div>
-                </div>
-
-                <!-- Slot Pas Foto -->
-                <div class="p-4 rounded-2xl bg-slate-900 border border-slate-700/80 space-y-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-white uppercase tracking-wider">4. Pas Foto Berwarna 3x4</span>
-                        <span class="text-[10px] text-teal-400 font-mono">Wajib</span>
-                    </div>
-
-                    <div class="relative border-2 border-dashed border-slate-700 rounded-xl p-4 text-center hover:border-teal-500 transition-colors bg-slate-850">
-                        <template x-if="previews.passfoto">
-                            <div class="space-y-2">
-                                <img :src="previews.passfoto" class="h-28 mx-auto rounded-lg object-contain shadow-md">
-                                <span class="text-[11px] text-emerald-400 block font-semibold">✓ Siap diunggah</span>
-                            </div>
-                        </template>
-                        <template x-if="!previews.passfoto">
-                            <div class="space-y-2 py-2">
-                                <svg class="w-8 h-8 text-slate-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                                <span class="text-xs text-slate-400 block">Ambil Foto Wajah Siswa</span>
-                            </div>
-                        </template>
-
-                        <input type="file" 
-                               accept="image/*"
-                               capture="user"
-                               @change="handleFileChange($event, 'passfoto')"
-                               class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                    </div>
+                    <form action="{{ route('pendaftar.upload_document') }}" method="POST" enctype="multipart/form-data" class="mt-4">
+                        @csrf
+                        <input type="hidden" name="doc_type" value="skl">
+                        <label class="cursor-pointer w-full inline-flex items-center justify-center px-3 py-2 rounded-xl bg-slate-800 border border-amber-500/50 text-amber-300 hover:bg-slate-700 text-xs font-bold transition shadow-sm">
+                            <i class="fa-solid fa-camera mr-1.5 text-sm"></i>
+                            <span>Foto / Pilih SKL</span>
+                            <input type="file" name="file" accept="image/*" capture="environment" class="hidden" onchange="this.form.submit()">
+                        </label>
+                    </form>
                 </div>
             </div>
 
-            <!-- Finalize Confirmation & Submit -->
-            <div class="pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <button type="button" @click="currentStep = 2" class="text-xs font-semibold text-slate-400 hover:text-white px-4 py-2">
-                    ← Kembali ke Pembayaran
-                </button>
-
-                <button type="button" 
-                        @click="finishRegistration"
-                        :disabled="loading"
-                        class="min-h-[50px] w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold rounded-2xl shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer">
-                    <span x-show="!loading">🚀 Selesaikan & Buka Dashboard Pendaftar</span>
-                    <span x-show="loading" class="inline-flex items-center gap-2" style="display:none;">
-                        <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                        <span>Memproses Pendaftaran...</span>
-                    </span>
-                </button>
+            <!-- Diskon Saudara Kandung (Sibling Discount) -->
+            <div class="mb-8 p-5 rounded-2xl bg-slate-900/70 border border-slate-700">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-2">
+                        <i class="fa-solid fa-hand-holding-heart text-teal-400"></i>
+                        <h4 class="font-bold text-xs text-white">Punya Saudara Kandung Aktif di Madrasah/Sekolah Ini?</h4>
+                    </div>
+                    <span class="text-[10px] font-bold text-emerald-300 bg-emerald-950 border border-emerald-700 px-2 py-0.5 rounded-full">Potongan 20%</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mb-3">Dapatkan beasiswa keringanan pendaftaran 20% jika kakak/adik saat ini berstatus siswa aktif.</p>
+                
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <input type="text" x-model="siblingNisn" maxlength="10" placeholder="Ketik 10 Digit NISN Saudara Kandung"
+                           class="flex-1 px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500 font-mono">
+                    <button type="button" @click="checkSiblingDiscount()" :disabled="siblingChecking"
+                            class="px-4 py-2 bg-teal-700 hover:bg-teal-600 text-white rounded-xl text-xs font-bold transition disabled:opacity-50">
+                        <span x-show="!siblingChecking">Verifikasi NISN</span>
+                        <span x-show="siblingChecking"><i class="fa-solid fa-spinner fa-spin mr-1"></i> Memeriksa...</span>
+                    </button>
+                </div>
+                <template x-if="siblingMessage">
+                    <p class="text-xs font-semibold mt-2" :class="siblingValid ? 'text-emerald-400' : 'text-rose-400'" x-text="siblingMessage"></p>
+                </template>
             </div>
+
+            <!-- Finalisasi & Kunci Data -->
+            <form action="{{ route('pendaftar.finalize') }}" method="POST" class="pt-4 border-t border-slate-700">
+                @csrf
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <button type="button" @click="step = 2" class="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-slate-700 text-slate-300 text-xs font-bold hover:bg-slate-800 transition">
+                        <i class="fa-solid fa-arrow-left mr-1"></i> Kembali ke Klaster
+                    </button>
+                    
+                    <button type="submit" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-sm shadow-xl shadow-teal-950 transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-lock"></i>
+                        <span>Kunci Formulir & Lanjut Pembayaran</span>
+                    </button>
+                </div>
+            </form>
         </div>
 
     </main>
 
-    <!-- Wizard JavaScript Driver (Alpine Component) -->
-    <script>
-        function registrationWizard(config) {
-            return {
-                currentStep: config.initialStep || 1,
-                regCode: config.regCode,
-                fullName: config.fullName,
-                nik: config.nik,
-                dob: config.dob,
-                phoneNumber: config.phoneNumber,
-                waveName: config.waveName,
-                clusterId: config.clusterId,
-                isBoarding: config.isBoarding,
-                parentName: config.parentName || 'Orang Tua / Wali',
-                parentPhone: config.parentPhone || config.phoneNumber,
-                parentJob: config.parentJob || 'Wiraswasta',
-                hasSibling: config.hasSibling,
-                siblingNisn: config.siblingNisn,
-                siblingName: config.siblingName,
-                siblingVerified: !!config.siblingNisn,
-                paymentMethod: 'transfer',
-                baseAmount: config.baseAmount || 300000,
-                loading: false,
-                previews: {
-                    kk: null,
-                    akta: null,
-                    skl: null,
-                    passfoto: null
-                },
+    <!-- Footer Simple -->
+    <footer class="mt-12 py-6 text-center text-xs text-slate-500 border-t border-slate-800 bg-slate-950">
+        <p>&copy; {{ date('Y') }} Sistem Informasi PPDB Online Terpadu.</p>
+    </footer>
 
-                getStepTitle() {
-                    if (this.currentStep === 1) return 'Kunci Kuota & Rumpun Keahlian';
-                    if (this.currentStep === 2) return 'Pilihan Pembayaran & Diskon';
-                    return 'Upload Berkas & Foto Siswa';
-                },
-
-                getProgressPercent() {
-                    if (this.currentStep === 1) return 33;
-                    if (this.currentStep === 2) return 66;
-                    return 100;
-                },
-
-                getProgressText() {
-                    if (this.currentStep === 1) return '33% Selesai';
-                    if (this.currentStep === 2) return '66% Selesai';
-                    return 'Hampir Selesai! (100%)';
-                },
-
-                formatRupiah(num) {
-                    return 'Rp ' + Number(num).toLocaleString('id-ID');
-                },
-
-                copyText(text, message) {
-                    window.copyToClipboard(text, message);
-                },
-
-                async submitStep1() {
-                    if (!this.clusterId) {
-                        window.showToast('Silakan pilih salah satu Klaster Kurikulum Merdeka.', 'warning');
-                        return;
-                    }
-                    this.loading = true;
-                    try {
-                        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                        
-                        // 1. Simpan Step 1 (Quick Lock)
-                        let res1 = await fetch('{{ route('pendaftar.step1') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': token
-                            },
-                            body: JSON.stringify({
-                                full_name: this.fullName,
-                                nik: this.nik,
-                                dob: this.dob,
-                                phone_number: this.phoneNumber,
-                                wave_name: this.waveName
-                            })
-                        });
-                        let json1 = await res1.json();
-                        if (!res1.ok || !json1.success) {
-                            window.showToast(json1.message || 'Gagal menyimpan Step 1', 'error');
-                            this.loading = false;
-                            return;
-                        }
-
-                        this.regCode = json1.reg_code;
-
-                        // 2. Simpan Step 2 (Klaster & Asrama)
-                        let res2 = await fetch('{{ route('pendaftar.step2') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': token
-                            },
-                            body: JSON.stringify({
-                                cluster_id: this.clusterId,
-                                is_boarding: this.isBoarding
-                            })
-                        });
-
-                        window.showToast('Kuota berhasil dikunci! Kode: ' + this.regCode, 'success');
-                        this.currentStep = 2;
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                    } catch (e) {
-                        window.showToast('Terjadi gangguan jaringan.', 'error');
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                async verifySibling() {
-                    if (!this.siblingNisn || this.siblingNisn.length < 5) {
-                        window.showToast('Masukkan minimal 5-10 digit NISN', 'warning');
-                        return;
-                    }
-                    try {
-                        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                        let res = await fetch('{{ route('pendaftar.check_sibling') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': token
-                            },
-                            body: JSON.stringify({ nisn: this.siblingNisn })
-                        });
-                        let json = await res.json();
-                        if (json.success) {
-                            this.siblingVerified = true;
-                            this.siblingName = json.sibling_name;
-                            this.baseAmount = 240000;
-                            window.showToast(json.message, 'success');
-                        } else {
-                            window.showToast(json.message, 'warning');
-                        }
-                    } catch (e) {
-                        window.showToast('Gagal memverifikasi NISN.', 'error');
-                    }
-                },
-
-                async submitStep2() {
-                    this.loading = true;
-                    try {
-                        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                        let res = await fetch('{{ route('pendaftar.step3') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': token
-                            },
-                            body: JSON.stringify({
-                                parent_name: this.parentName || 'Orang Tua ' + this.fullName,
-                                parent_phone: this.parentPhone || this.phoneNumber,
-                                parent_job: this.parentJob || 'Wiraswasta',
-                                has_sibling_discount: this.hasSibling,
-                                sibling_nisn: this.siblingNisn,
-                                sibling_name: this.siblingName
-                            })
-                        });
-                        let json = await res.json();
-                        if (json.success) {
-                            window.showToast('Data pembayaran & diskon tersimpan.', 'success');
-                            this.currentStep = 3;
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }
-                    } catch (e) {
-                        window.showToast('Gagal melanjutkan.', 'error');
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-
-                handleFileChange(event, type) {
-                    const file = event.target.files[0];
-                    if (!file) return;
-
-                    // Buat pratinjau instan jika berupa gambar
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            this.previews[type] = e.target.result;
-                        };
-                        reader.readAsDataURL(file);
-                    } else {
-                        this.previews[type] = 'https://placehold.co/150x150/1e293b/ffffff?text=' + type.toUpperCase();
-                    }
-
-                    // Unggah langsung via AJAX
-                    this.uploadSingleDoc(file, type);
-                },
-
-                async uploadSingleDoc(file, type) {
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('doc_type', type);
-
-                    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                    try {
-                        let res = await fetch('{{ route('pendaftar.upload_document') }}', {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': token,
-                                'Accept': 'application/json'
-                            },
-                            body: formData
-                        });
-                        let json = await res.json();
-                        if (json.success) {
-                            window.showToast('Berkas ' + type.toUpperCase() + ' berhasil diunggah!', 'success');
-                        } else {
-                            window.showToast('Gagal mengunggah berkas: ' + json.message, 'error');
-                        }
-                    } catch (e) {
-                        window.showToast('Gagal mengunggah berkas.', 'error');
-                    }
-                },
-
-                async finishRegistration() {
-                    this.loading = true;
-                    try {
-                        // Submit finalize
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = '{{ route('pendaftar.finalize') }}';
-                        const csrfInput = document.createElement('input');
-                        csrfInput.type = 'hidden';
-                        csrfInput.name = '_token';
-                        csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                        form.appendChild(csrfInput);
-                        document.body.appendChild(form);
-                        form.submit();
-                    } catch (e) {
-                        this.loading = false;
-                        window.showToast('Gagal memproses finalisasi pendaftaran.', 'error');
-                    }
-                }
-            }
-        }
-    </script>
 </body>
 </html>

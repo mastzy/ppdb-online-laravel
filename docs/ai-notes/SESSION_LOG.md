@@ -2,18 +2,21 @@
 
 ## Tanggal: 30 Oktober 2026
 
-### Aktivitas & Pembaruan:
-1. **Pembuatan & Penyempurnaan Seluruh Blade Views Utama**:
-   - `resources/views/pendaftar/formulir.blade.php`: Dibangun dengan Stepper Wizard 3-Langkah berbasis Alpine.js, kartu klaster interaktif Kurikulum Merdeka, input unggah berkas berkamera langsung (`capture="environment"`), serta verifikasi diskon sibling 20% secara reaktif.
-   - `resources/views/pendaftar/cek_status_result.blade.php`: Tampilan publik hasil pencarian NIK / Kode Registrasi dilengkapi visual progress tahapan dan alert merah/kuning untuk status `revision_needed` beserta catatan revisi panitia.
-   - `resources/views/pendaftar/pembayaran.blade.php`: Antarmuka tagihan pembayaran mandiri dengan 3-digit kode unik transfer, tombol interaktif salin nominal & nomor rekening bank ber-toast notifikasi Alpine.js, pratinjau thumbnail struk instan, dan banner opsi pembayaran tunai offline.
-   - `resources/views/pendaftar/welcome_hub.blade.php`: Portal kelulusan santri dengan ucapan selamat, link integrasi WhatsApp Paguyuban Wali Santri, petunjuk seragam resmi madrasah, serta pusat unduh SK Lulus, Kuitansi, dan Stopmap PDF.
-   - `resources/views/admin/verification/index.blade.php` & `show.blade.php`: Dashboard Verifikator lengkap dengan In-App Document Preview Modal (inline preview PDF/foto langsung di browser) serta formulir Quick Approve & Minta Revisi dengan catatan wajib.
-   - `resources/views/admin/kasir/index.blade.php`: Dashboard Mode Kasir Offline Bendahara dengan input pencarian cepat siswa dan tombol transaksi bayar tunai sekali klik berstatus LUNAS.
-   - `resources/views/public/verify_document.blade.php`: Halaman publik keabsahan dokumen hasil scan QR Code berstempel digital.
-
-2. **Pengujian & Validasi**:
-   - Seluruh test suite dijalankan via container: `docker-compose exec -T app php artisan test`.
-   - Hasil: 10 test files passed, 112 assertions, 0 failed.
-   - Cache dibersihkan: `view:clear` dan `route:clear` sukses.
-
+### Penyelesaian Menyeluruh Backend, PDF Generator, Admin Workflow & Export Data:
+1. **Generator PDF & Validasi QR Code**:
+   - `ReceiptController.php`: Menghasilkan kuitansi pembayaran sah berstempel digital (`public/images/stempel_lunas.png`) dan QR Code SVG base64 terenkripsi.
+   - `StopmapResumeController.php`: Menghasilkan lembar ringkasan stopmap 1-halaman A4 portrait (One-Page Resume PDF) untuk ditempel pada map fisik pendaftar saat wawancara/daftar ulang.
+   - Dibuat rute dan template `resources/views/pdf/sk_lulus.blade.php`: Surat Keputusan Kelulusan resmi siswa diterima ber-QR Code validasi.
+   - Dibuat alias template `pdf/kuitansi.blade.php` dan `pdf/stopmap.blade.php`.
+2. **Validasi QR Code Publik**:
+   - `resources/views/public/verify_document.blade.php` dan `public/verify_receipt.blade.php` dipercantik menggunakan Tailwind CDN, menampilkan indikator centang hijau "DOKUMEN RESMI TERVERIFIKASI", rincian siswa, serta stempel digital yayasan.
+3. **Dashboard Verifikator & In-App Document Preview Modal**:
+   - Modal preview berkas Alpine.js pada `admin/verification/index.blade.php`, `show.blade.php`, dan `verifikator/dashboard.blade.php` memfasilitasi panitia memeriksa berkas foto/PDF tanpa perlu mengunduh file, disertai tombol quick decision *Approved* / *Minta Revisi* dengan catatan wajib.
+4. **Mode Kasir Offline Bendahara**:
+   - `admin/kasir/index.blade.php` dan `bendahara/kasir.blade.php` siap digunakan untuk pencarian pendaftar offline dan pemrosesan bayar tunai sekali klik dengan nomor kuitansi otomatis.
+5. **Ekspor Data EMIS & Dapodik**:
+   - `AdminExportController.php` telah memfasilitasi unduhan CSV/Excel UTF-8 BOM yang skema kolomnya 100% kompatibel dengan format impor massal EMIS Kemenag dan Dapodik Kemendikbud.
+6. **Eksekusi Pembersihan Cache & Pengujian**:
+   - Menjalankan `config:clear`, `route:clear`, `view:clear`, dan `storage:link`.
+   - Test suite `php artisan test` sukses 100% (10 passed, 112 assertions, 0 failed).
+   - Seluruh 5 container Docker Compose (`app`, `db`, `redis`, `webserver`, `phpmyadmin`) terpantau sehat dan aktif.

@@ -167,6 +167,25 @@ Route::get('/kuitansi/{registration}/pdf', [ReceiptController::class, 'download'
 Route::get('/kuitansi/{registration}/stream', [ReceiptController::class, 'stream'])->name('kuitansi.stream');
 Route::get('/verify/receipt/{hash}', [ReceiptController::class, 'verifyPublic'])->name('verify.receipt');
 
+// Generator Surat Keterangan Lulus (SK Lulus PDF)
+Route::get('/sk-lulus/{registration}/pdf', function (Registration $registration) {
+    $encryptedHash = \Illuminate\Support\Facades\Crypt::encryptString((string) $registration->id);
+    $verifyUrl = route('verify.document', ['hash' => $encryptedHash]);
+    $qrCode = base64_encode(\SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')->size(100)->margin(0)->generate($verifyUrl));
+
+    $stampPath = public_path('images/stempel_lunas.png');
+    $stampBase64 = file_exists($stampPath) ? base64_encode(file_get_contents($stampPath)) : '';
+
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.sk_lulus', [
+        'registration' => $registration->load('cluster'),
+        'qrCode' => $qrCode,
+        'stampBase64' => $stampBase64,
+    ]);
+    $pdf->setPaper('a4', 'portrait');
+
+    return $pdf->download('SK_Lulus_'.$registration->reg_code.'.pdf');
+})->name('sk_lulus.pdf');
+
 
 // --- 11. Public Route: Validasi Kartu Pendaftaran & Dokumen ---
 Route::get('/verify/document/{hash}', function ($hash) {

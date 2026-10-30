@@ -3,164 +3,325 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Verifikator Panitia - PPDB Online</title>
+    <title>Dashboard Verifikasi Panitia - PPDB Online</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
-        .alert { padding: 12px; border-radius: 4px; margin-bottom: 20px; }
-        .alert-success { background-color: #d4edda; color: #155724; }
-        .filter-card { background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #e9ecef; }
-        .filter-form { display: flex; gap: 15px; align-items: center; }
-        .filter-form select, .filter-form input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        table th, table td { border: 1px solid #ddd; padding: 10px; text-align: left; vertical-align: top; }
-        table th { background-color: #007bff; color: white; }
-        .badge { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; }
-        .badge-draft { background: #e2e3e5; color: #383d41; }
-        .badge-approved { background: #d4edda; color: #155724; }
-        .badge-rejected { background: #f8d7da; color: #721c24; }
-        .badge-revision_needed { background: #fff3cd; color: #856404; }
-        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 12px; }
-        .btn-primary { background: #007bff; color: white; }
-        .btn-danger { background: #dc3545; color: white; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
-<body>
+<body class="bg-slate-100 text-slate-800 min-h-screen"
+      x-data="{
+          previewModal: false,
+          currentRegId: null,
+          currentName: '',
+          currentRegCode: '',
+          currentStatus: 'approved',
+          currentNote: '',
+          docsList: [],
+          activeDocUrl: null,
+          isPdf: false,
+          openModal(item) {
+              this.currentRegId = item.id;
+              this.currentName = item.full_name;
+              this.currentRegCode = item.reg_code;
+              this.currentStatus = item.status === 'revision_needed' ? 'revision_needed' : 'approved';
+              this.currentNote = item.catatan_koreksi || '';
+              this.docsList = item.documents || [];
+              if (this.docsList.length > 0) {
+                  this.selectDoc(this.docsList[0]);
+              } else {
+                  this.activeDocUrl = null;
+              }
+              this.previewModal = true;
+          },
+          selectDoc(doc) {
+              this.activeDocUrl = '/storage/' + doc.file_path;
+              this.isPdf = doc.file_path.toLowerCase().endsWith('.pdf');
+          }
+      }">
 
-<div class="container">
-    <div class="header">
-        <div>
-            <h2>Dashboard Verifikasi Panitia PPDB</h2>
-            <p>Pengelola: <strong>{{ auth()->user()->name }}</strong> (Role: Verifikator/Admin)</p>
-        </div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <a href="{{ route('admin.export.emis') }}" class="btn" style="background:#059669; color:white;" title="Ekspor Data Siswa Lulus Format EMIS 4.0 Kemenag">
-                📥 Ekspor EMIS (Kemenag)
-            </a>
-            <a href="{{ route('admin.export.dapodik') }}" class="btn" style="background:#2563eb; color:white;" title="Ekspor Data Siswa Lulus Format Dapodik Kemendikbud">
-                📥 Ekspor Dapodik (Kemendikbud)
-            </a>
-            @if(in_array(auth()->user()->role, ['admin', 'bendahara']))
-                <a href="{{ route('bendahara.kasir') }}" class="btn" style="background:#0284c7; color:white;">
-                    💵 Mode Kasir Offline
+    <!-- Top Navigation Header -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-md shadow-emerald-200">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-slate-900 text-sm sm:text-base leading-tight">Dashboard Verifikasi Panitia</h1>
+                    <p class="text-xs text-slate-500">Petugas: <strong>{{ auth()->user()->name }}</strong> ({{ strtoupper(auth()->user()->role) }})</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <a href="{{ route('admin.export.emis') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold hover:bg-emerald-100 transition" title="Ekspor Data Format EMIS Kemenag">
+                    <i class="fa-solid fa-file-excel mr-1.5 text-emerald-600"></i> Ekspor EMIS
                 </a>
-            @endif
-            <form action="{{ route('logout') }}" method="POST">
-                @csrf
-                <button type="submit" class="btn btn-danger">Logout</button>
+                <a href="{{ route('admin.export.dapodik') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-teal-50 text-teal-700 border border-teal-200 text-xs font-bold hover:bg-teal-100 transition" title="Ekspor Data Format Dapodik Kemendikbud">
+                    <i class="fa-solid fa-file-csv mr-1.5 text-teal-600"></i> Ekspor Dapodik
+                </a>
+                @if(in_array(auth()->user()->role, ['admin', 'bendahara']))
+                    <a href="{{ route('bendahara.kasir') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold hover:bg-amber-100 transition">
+                        <i class="fa-solid fa-cash-register mr-1.5"></i> Kasir Loket
+                    </a>
+                @endif
+                <form action="{{ route('logout') }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit" class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Logout">
+                        <i class="fa-solid fa-power-off"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+
+        <!-- Flash Message Alerts -->
+        @if(session('success'))
+            <div class="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-start space-x-3 shadow-sm">
+                <i class="fa-solid fa-circle-check text-emerald-600 text-lg mt-0.5"></i>
+                <div class="text-xs">
+                    <h4 class="font-bold text-sm">Status Berhasil Diperbarui:</h4>
+                    <p class="mt-0.5">{{ session('success') }}</p>
+                </div>
+            </div>
+        @endif
+
+        <!-- Filter Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 mb-6 shadow-sm">
+            <form action="{{ route('verifikator.dashboard') }}" method="GET" class="flex flex-col sm:flex-row items-center gap-4 justify-between">
+                <div class="flex items-center space-x-3 w-full sm:w-auto">
+                    <h2 class="font-black text-slate-900 text-base">Antrean Berkas Siswa</h2>
+                    <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        {{ $registrations->total() }} Data Pendaftar
+                    </span>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+                    <select name="status" class="px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white text-slate-700 focus:ring-2 focus:ring-emerald-500">
+                        <option value="">Semua Status</option>
+                        <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
+                        <option value="pending_payment" {{ request('status') === 'pending_payment' ? 'selected' : '' }}>Menunggu Pembayaran</option>
+                        <option value="paid" {{ request('status') === 'paid' ? 'selected' : '' }}>Sudah Bayar</option>
+                        <option value="revision_needed" {{ request('status') === 'revision_needed' ? 'selected' : '' }}>Perlu Revisi</option>
+                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved / Lulus</option>
+                        <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Ditolak</option>
+                    </select>
+
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition">
+                        <i class="fa-solid fa-filter mr-1"></i> Filter
+                    </button>
+                </div>
             </form>
         </div>
-    </div>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    <!-- Filtering Data Pendaftar (REQ-VERIF-01) -->
-    <div class="filter-card">
-        <h4>Filter Data Pendaftar</h4>
-        <form action="{{ route('verifikator.dashboard') }}" method="GET" class="filter-form">
-            <div>
-                <label>Jalur:</label>
-                <select name="jalur">
-                    <option value="">Semua Jalur</option>
-                    <option value="zonasi" {{ request('jalur') == 'zonasi' ? 'selected' : '' }}>Zonasi</option>
-                    <option value="prestasi" {{ request('jalur') == 'prestasi' ? 'selected' : '' }}>Prestasi</option>
-                    <option value="afirmasi" {{ request('jalur') == 'afirmasi' ? 'selected' : '' }}>Afirmasi</option>
-                    <option value="perpindahan" {{ request('jalur') == 'perpindahan' ? 'selected' : '' }}>Perpindahan</option>
-                </select>
+        <!-- Table Data Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 font-extrabold uppercase tracking-wider">
+                            <th class="py-3.5 px-4">No. Registrasi / NIK</th>
+                            <th class="py-3.5 px-4">Nama Calon Siswa</th>
+                            <th class="py-3.5 px-4">Peminatan / Asrama</th>
+                            <th class="py-3.5 px-4">Status & Kelengkapan</th>
+                            <th class="py-3.5 px-4 text-center">Aksi Verifikasi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse($registrations as $reg)
+                            <tr class="hover:bg-slate-50/70 transition">
+                                <td class="py-3.5 px-4">
+                                    <span class="font-mono font-bold text-emerald-700 block text-xs">{{ $reg->reg_code }}</span>
+                                    <span class="font-mono text-slate-400 text-[11px]">{{ $reg->nik }}</span>
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    <span class="font-bold text-slate-900 block text-xs">{{ $reg->full_name }}</span>
+                                    <span class="text-[11px] text-slate-400">WA: {{ $reg->phone_number }}</span>
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    <span class="font-bold text-slate-700 block">{{ $reg->cluster?->name ?? 'Belum Ditentukan' }}</span>
+                                    <span class="text-[10px] {{ $reg->is_boarding ? 'text-emerald-700 bg-emerald-50' : 'text-slate-600 bg-slate-100' }} px-1.5 py-0.5 rounded font-semibold inline-block mt-0.5">
+                                        {{ $reg->is_boarding ? 'Santri Mukim' : 'Non-Mukim' }}
+                                    </span>
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    <div class="mb-1">
+                                        @if($reg->status === 'approved')
+                                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                                <i class="fa-solid fa-check mr-1"></i> Approved
+                                            </span>
+                                        @elseif($reg->status === 'revision_needed')
+                                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">
+                                                <i class="fa-solid fa-triangle-exclamation mr-1"></i> Perlu Revisi
+                                            </span>
+                                        @elseif($reg->status === 'paid')
+                                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-teal-100 text-teal-800">
+                                                <i class="fa-solid fa-receipt mr-1"></i> Sudah Bayar
+                                            </span>
+                                        @else
+                                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                                                {{ strtoupper($reg->status) }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <span class="text-[11px] text-slate-400">Berkas: <strong>{{ $reg->documents->count() }}</strong> file</span>
+                                </td>
+                                <td class="py-3.5 px-4 text-center">
+                                    <button type="button" 
+                                            @click="openModal({{ json_encode($reg) }})"
+                                            class="inline-flex items-center px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition">
+                                        <i class="fa-solid fa-magnifying-glass mr-1.5"></i> Periksa Berkas
+                                    </button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-slate-400">
+                                    Tidak ada antrean pendaftar pada filter ini.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-            <div>
-                <label>Status Verifikasi:</label>
-                <select name="status">
-                    <option value="">Semua Status</option>
-                    <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
-                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                    <option value="revision_needed" {{ request('status') == 'revision_needed' ? 'selected' : '' }}>Revision Needed</option>
-                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Terapkan Filter</button>
-            <a href="{{ route('verifikator.dashboard') }}" class="btn" style="background:#6c757d; color:white;">Reset</a>
-        </form>
-    </div>
 
-    <!-- Tabel Verifikasi Pendaftar (REQ-VERIF-02 & REQ-VERIF-03) -->
-    <table>
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>Calon Siswa</th>
-                <th>NIK & NISN</th>
-                <th>Jalur</th>
-                <th>Berkas Terunggah</th>
-                <th>Status Saat Ini</th>
-                <th>Aksi Verifikasi Panitia</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($registrations as $index => $reg)
-                <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>
-                        <strong>{{ $reg->user->name }}</strong><br>
-                        <small>{{ $reg->user->email }}</small>
-                    </td>
-                    <td>
-                        NIK: {{ $reg->user->nik ?? '-' }}<br>
-                        NISN: {{ $reg->user->nisn ?? '-' }}
-                    </td>
-                    <td>{{ strtoupper($reg->jalur ?? 'Draft') }}</td>
-                    <td>
-                        <!-- In-App Document Preview (REQ-FILE-03) -->
-                        @if($reg->documents->count() > 0)
-                            <ul style="padding-left: 15px; margin: 0;">
-                                @foreach($reg->documents as $doc)
-                                    <li>
-                                        <a href="{{ route('verifikator.document.preview', $doc->id) }}" target="_blank">
-                                            {{ strtoupper($doc->type) }} (Preview)
-                                        </a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        @else
-                            <em style="color: #999;">Belum ada berkas</em>
-                        @endif
-                    </td>
-                    <td>
-                        <span class="badge badge-{{ $reg->status }}">{{ strtoupper(str_replace('_', ' ', $reg->status)) }}</span><br>
-                        @if($reg->is_locked)
-                            <small style="color: green;">✔ Finalized</small>
-                        @else
-                            <small style="color: orange;">⏳ Belum Final</small>
-                        @endif
-                    </td>
-                    <td>
-                        <form action="{{ route('verifikator.verify', $reg->id) }}" method="POST">
-                            @csrf
-                            <div style="margin-bottom: 5px;">
-                                <select name="status" required style="width: 100%;">
-                                    <option value="approved" {{ $reg->status == 'approved' ? 'selected' : '' }}>Approve (Terima)</option>
-                                    <option value="revision_needed" {{ $reg->status == 'revision_needed' ? 'selected' : '' }}>Revision Needed (Perbaikan)</option>
-                                    <option value="rejected" {{ $reg->status == 'rejected' ? 'selected' : '' }}>Reject (Tolak)</option>
-                                </select>
+            <!-- Pagination Links -->
+            <div class="p-4 border-t border-slate-200">
+                {{ $registrations->links() }}
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ============================================================== -->
+    <!-- IN-APP DOCUMENT PREVIEW & QUICK VERIFICATION MODAL (ALPINE.JS) -->
+    <!-- ============================================================== -->
+    <div x-show="previewModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+        
+        <div class="bg-white rounded-3xl border border-slate-200 max-w-5xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
+             @click.away="previewModal = false">
+            
+            <!-- Modal Header -->
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <div>
+                    <h3 class="font-extrabold text-slate-900 text-base" x-text="'Periksa Berkas: ' + currentName"></h3>
+                    <p class="text-xs text-slate-500">
+                        Kode Registrasi: <span class="font-mono font-bold text-emerald-700" x-text="currentRegCode"></span>
+                    </p>
+                </div>
+                <button type="button" @click="previewModal = false" class="text-slate-400 hover:text-slate-600 p-2 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body: Split Viewer & Decision Form -->
+            <div class="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200">
+                
+                <!-- Kolom Kiri: Document Viewer -->
+                <div class="md:col-span-2 p-5 bg-slate-900 flex flex-col justify-between min-h-[380px]">
+                    <!-- Navigasi Jenis Berkas -->
+                    <div class="flex items-center space-x-2 mb-3 overflow-x-auto pb-2">
+                        <template x-for="d in docsList" :key="d.id">
+                            <button type="button" @click="selectDoc(d)"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 shrink-0"
+                                    :class="activeDocUrl === ('/storage/' + d.file_path) ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'">
+                                <i class="fa-solid fa-file"></i>
+                                <span x-text="d.doc_type.toUpperCase()"></span>
+                            </button>
+                        </template>
+                        <template x-if="docsList.length === 0">
+                            <span class="text-xs text-slate-400">Pendaftar belum mengunggah dokumen digital.</span>
+                        </template>
+                    </div>
+
+                    <!-- Area Display Pratinjau -->
+                    <div class="flex-1 bg-slate-950 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-800 p-2">
+                        <template x-if="activeDocUrl && !isPdf">
+                            <img :src="activeDocUrl" class="max-h-[460px] w-auto max-w-full object-contain rounded-lg shadow">
+                        </template>
+
+                        <template x-if="activeDocUrl && isPdf">
+                            <iframe :src="activeDocUrl" class="w-full h-[460px] rounded-lg border-0"></iframe>
+                        </template>
+
+                        <template x-if="!activeDocUrl">
+                            <div class="text-center p-8 text-slate-500">
+                                <i class="fa-solid fa-image text-4xl mb-2"></i>
+                                <p class="text-xs">Tidak ada pratinjau dokumen yang dipilih.</p>
                             </div>
-                            <div style="margin-bottom: 5px;">
-                                <input type="text" name="catatan_koreksi" value="{{ $reg->catatan_koreksi }}" placeholder="Alasan jika ditolak/perbaikan (Wajib)" style="width: 100%; box-sizing: border-box;">
-                            </div>
-                            <button type="submit" class="btn btn-primary" style="width: 100%;">Simpan Verifikasi</button>
-                        </form>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="7" style="text-align: center; color: #888;">Tidak ada data pendaftar yang ditemukan.</td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-</div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Kolom Kanan: Form Quick Verification Decision -->
+                <div class="p-6 bg-white flex flex-col justify-between">
+                    <form :action="'/verifikator/verify/' + currentRegId" method="POST">
+                        @csrf
+                        <h4 class="font-extrabold text-slate-900 text-xs uppercase tracking-wider mb-3">Keputusan Verifikasi</h4>
+
+                        <!-- Status Pilihan -->
+                        <div class="space-y-2 mb-4">
+                            <label class="flex items-center space-x-3 p-3 rounded-xl border cursor-pointer transition"
+                                   :class="currentStatus === 'approved' ? 'border-emerald-600 bg-emerald-50 text-emerald-900 font-bold' : 'border-slate-200 text-slate-700'">
+                                <input type="radio" name="status" value="approved" x-model="currentStatus" class="text-emerald-600">
+                                <span class="text-xs">Setujui / Lolos (Approved)</span>
+                            </label>
+
+                            <label class="flex items-center space-x-3 p-3 rounded-xl border cursor-pointer transition"
+                                   :class="currentStatus === 'revision_needed' ? 'border-amber-600 bg-amber-50 text-amber-900 font-bold' : 'border-slate-200 text-slate-700'">
+                                <input type="radio" name="status" value="revision_needed" x-model="currentStatus" class="text-amber-600">
+                                <span class="text-xs">Minta Revisi Dokumen</span>
+                            </label>
+
+                            <label class="flex items-center space-x-3 p-3 rounded-xl border cursor-pointer transition"
+                                   :class="currentStatus === 'rejected' ? 'border-rose-600 bg-rose-50 text-rose-900 font-bold' : 'border-slate-200 text-slate-700'">
+                                <input type="radio" name="status" value="rejected" x-model="currentStatus" class="text-rose-600">
+                                <span class="text-xs">Tolak Pendaftaran</span>
+                            </label>
+                        </div>
+
+                        <!-- Catatan Wajib Jika Minta Revisi / Ditolak -->
+                        <div class="mb-4">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">
+                                Catatan Koreksi untuk Siswa
+                                <span x-show="currentStatus !== 'approved'" class="text-rose-500">* (Wajib)</span>
+                            </label>
+                            <textarea name="catatan_koreksi" rows="4" x-model="currentNote"
+                                      placeholder="Contoh: Foto Kartu Keluarga buram atau terpotong, mohon unggah ulang foto yang jelas..."
+                                      class="w-full p-3 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"></textarea>
+                            <p class="text-[10px] text-slate-400 mt-1">Catatan ini akan langsung tampil di portal pendaftar dan hasil cek status publik.</p>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-100 flex items-center justify-end space-x-2">
+                            <button type="button" @click="previewModal = false" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-600 text-xs font-bold hover:bg-slate-50 transition">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-200 transition">
+                                Simpan Keputusan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </body>
 </html>

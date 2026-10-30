@@ -2,22 +2,25 @@
 
 ### Done
 - Project scaffolding with Laravel 11 & Docker Compose (app, webserver, db, redis, phpmyadmin).
-- Implemented registration flow, zero-friction applicant authentication, verifikator verification, and offline cash register.
-- Integrated `barryvdh/laravel-dompdf` & `simplesoftwareio/simple-qrcode` for digital stamp receipts & stopmap resume PDF.
-- Admin export for EMIS (Kemenag) & Dapodik (Kemendikbud).
-- **All Blade Views Completed (100% Full Implementation with CDN Tailwind CSS, Plus Jakarta Sans, FontAwesome & Alpine.js)**:
-  1. `resources/views/pendaftar/formulir.blade.php`: Stepper Wizard 1-Menit, card pilihan klaster, kamera HP `capture="environment"`, auto-check sibling discount.
-  2. `resources/views/pendaftar/cek_status_result.blade.php`: Halaman pencarian cepat NIK/Kode Pendaftaran tanpa login, badge warna, dan alert revisi berkas.
-  3. `resources/views/pendaftar/pembayaran.blade.php`: Tagihan 3-digit kode unik, tombol salin nominal & no rek dengan toast Alpine.js, struk preview instan, banner loket tunai.
-  4. `resources/views/pendaftar/welcome_hub.blade.php`: Selebrasi kelulusan santri, link WhatsApp paguyuban wali santri, petunjuk seragam, download SK & Kuitansi PDF.
-  5. `resources/views/admin/verification/index.blade.php` & `show.blade.php`: Tabel verifikasi & In-App Document Preview Modal (inline stream foto/PDF tanpa download) + Quick Approve/Revisi form.
-  6. `resources/views/admin/kasir/index.blade.php`: Interface Mode Kasir Offline Bendahara dengan pencarian instan dan tombol bayar tunai sekali klik.
-  7. `resources/views/public/verify_document.blade.php`: Halaman validasi publik scan QR Code kuitansi & SK lulus ber-stempel digital.
-- Unit & Feature Tests: 10/10 tests passed (112 assertions).
+- Registration flow, zero-friction applicant authentication, verifikator verification, and offline cash register.
+- **Generator PDF & QR Code (DomPDF & Simple-QRCode)**:
+  * `resources/views/pdf/kuitansi.blade.php` & `kuitansi_pembayaran.blade.php`: Kuitansi resmi LUNAS berstempel digital & QR code verifikasi keabsahan.
+  * `resources/views/pdf/stopmap.blade.php` & `ringkasan_stopmap.blade.php`: Cetak Ringkasan Stopmap 1-Halaman (One-Page Resume PDF) memuat identitas, rincian klaster, checklist berkas fisik, dan paraf verifikator.
+  * `resources/views/pdf/sk_lulus.blade.php`: Cetak Surat Keputusan Kelulusan resmi ber-QR Code & stempel digital.
+- **Halaman Validasi QR Code Publik**:
+  * `resources/views/public/verify_document.blade.php`: Halaman publik terenkripsi hasil scan QR Code yang menampilkan badge "DOKUMEN TERVERIFIKASI RESMI", timestamp penerbitan, dan stempel yayasan.
+  * `resources/views/public/verify_receipt.blade.php`: Validasi keabsahan kuitansi pembayaran resmi.
+- **Dashboard Verifikator & In-App Document Preview Modal**:
+  * `resources/views/admin/verification/index.blade.php`, `show.blade.php`, dan `verifikator/dashboard.blade.php` dilengkapi inline stream preview dokumen (foto/PDF) tanpa memaksa unduh file + quick approve & revisi form.
+- **Mode Kasir Offline Bendahara**:
+  * `resources/views/admin/kasir/index.blade.php` & `bendahara/kasir.blade.php`: Interface loket pencarian instan pendaftar dan tombol pembayaran tunai langsung berstatus LUNAS.
+- **Ekspor Data EMIS Kemenag & Dapodik Kemendikbud**:
+  * `AdminExportController.php`: Ekspor CSV ber-UTF-8 BOM siap impor ke sistem EMIS 4.0 dan Dapodik Kemendikbudristek.
+- **UI & Frontend**: 100% menggunakan Tailwind CSS CDN, Google Font Plus Jakarta Sans, FontAwesome 6, dan Alpine.js 3 pada seluruh modul pendaftar, admin, dan publik.
+- **Pengujian**: 10/10 test files passed (112 assertions, 0 failed).
 
 ### In Progress
-- CI/CD pipeline and automated deployment setup.
+- CI/CD workflow pada GitHub Actions.
 
 ### Backlog
-- Deployment to production / Laravel Cloud.
-- Advanced application telemetry & performance monitoring.
+- Rilis production dan hosting setup.

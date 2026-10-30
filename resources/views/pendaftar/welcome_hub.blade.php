@@ -123,7 +123,7 @@
                         <p class="text-[11px] text-slate-400 mt-1">Surat resmi keputusan penerimaan siswa baru ber-QR Code digital.</p>
                     </div>
                     <div class="mt-4 pt-3 border-t border-slate-800">
-                        <a href="{{ route('kuitansi.pdf', $applicant->id) }}" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center justify-center space-x-2 shadow">
+                        <a href="{{ route('sk_lulus.pdf', $applicant->id) }}" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center justify-center space-x-2 shadow">
                             <i class="fa-solid fa-download"></i>
                             <span>Unduh SK (PDF)</span>
                         </a>

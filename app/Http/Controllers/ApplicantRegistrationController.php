@@ -27,11 +27,7 @@ class ApplicantRegistrationController extends Controller
         $clusters = ProgramCluster::active()->get();
         $documents = $applicant ? $applicant->documents->keyBy('doc_type') : collect();
 
-        if (view()->exists('register.wizard')) {
-            return view('register.wizard', compact('applicant', 'clusters', 'documents'));
-        }
-
-        return view('pendaftar.form', compact('applicant', 'clusters', 'documents'));
+        return view('pendaftar.formulir', compact('applicant', 'clusters', 'documents'));
     }
 
     /**

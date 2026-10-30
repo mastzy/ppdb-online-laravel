@@ -4,185 +4,224 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Calon Siswa - PPDB Online</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
-        .alert { padding: 12px; border-radius: 4px; margin-bottom: 20px; }
-        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .badge { padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block; }
-        .badge-draft { background: #e2e3e5; color: #383d41; }
-        .badge-approved { background: #d4edda; color: #155724; }
-        .badge-rejected { background: #f8d7da; color: #721c24; }
-        .badge-revision { background: #fff3cd; color: #856404; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
-        .form-group select, .form-group input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        .btn { padding: 10px 18px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 14px; display: inline-block; }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-success { background-color: #28a745; color: white; }
-        .btn-warning { background-color: #ffc107; color: #212529; }
-        .btn-danger { background-color: #dc3545; color: white; }
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .section-title { margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 8px; color: #333; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        table th, table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        table th { background-color: #f8f9fa; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
-<body>
+<body class="bg-slate-900 text-slate-100 min-h-screen py-8 px-4 flex flex-col justify-between">
 
-<div class="container">
-    <div class="header">
-        <div>
-            <h2>Dashboard Calon Siswa</h2>
-            <p>Selamat datang, <strong>{{ auth()->user()->name }}</strong> (NISN: {{ auth()->user()->nisn ?? '-' }})</p>
-        </div>
-        <form action="{{ route('logout') }}" method="POST">
-            @csrf
-            <button type="submit" class="btn btn-danger">Logout</button>
-        </form>
-    </div>
+    <div class="max-w-4xl mx-auto w-full space-y-6">
 
-    <!-- Notifikasi Pesan -->
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-    @if(session('error'))
-        <div class="alert alert-error">{{ session('error') }}</div>
-    @endif
+        <!-- Top Navigation -->
+        <header class="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div class="flex items-center space-x-3">
+                <a href="{{ route('home') }}" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-lg shadow-emerald-950">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </a>
+                <div>
+                    <h1 class="font-extrabold text-white text-base">Dashboard Calon Siswa</h1>
+                    <p class="text-xs text-slate-400">Selamat datang, <strong class="text-emerald-400">{{ auth()->user()->name }}</strong></p>
+                </div>
+            </div>
 
-    <!-- Status Pendaftaran -->
-    @php
-        $registration = auth()->user()->registration;
-        $isLocked = $registration->is_locked ?? false;
-        $status = $registration->status ?? 'draft';
-    @endphp
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="px-3 py-1.5 rounded-lg border border-rose-900/60 bg-rose-950/40 text-xs font-bold text-rose-300 hover:text-white hover:bg-rose-900 transition">
+                    <i class="fa-solid fa-arrow-right-from-bracket mr-1"></i> Keluar
+                </button>
+            </form>
+        </header>
 
-    <div style="background: #e9ecef; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
-        <strong>Status Pendaftaran:</strong>
-        <span class="badge badge-{{ $status }}">{{ strtoupper(str_replace('_', ' ', $status)) }}</span>
-        @if($isLocked)
-            <span class="badge" style="background: #17a2b8; color: white;">TERKUNCI (FINAL)</span>
+        <!-- Flash Messages -->
+        @if(session('success'))
+            <div class="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-200 flex items-start space-x-3 shadow-lg">
+                <i class="fa-solid fa-circle-check text-emerald-400 text-lg mt-0.5"></i>
+                <div class="text-xs">
+                    <h4 class="font-bold text-sm text-emerald-300">Berhasil!</h4>
+                    <p class="mt-0.5">{{ session('success') }}</p>
+                </div>
+            </div>
         @endif
 
-        @if($registration && $registration->catatan_koreksi)
-            <div style="margin-top: 10px; color: #721c24; background: #f8d7da; padding: 10px; border-radius: 4px;">
-                <strong>Catatan Koreksi dari Panitia:</strong> {{ $registration->catatan_koreksi }}
+        @if(session('error'))
+            <div class="p-4 rounded-2xl bg-rose-950/80 border border-rose-500/40 text-rose-200 flex items-start space-x-3 shadow-lg">
+                <i class="fa-solid fa-triangle-exclamation text-rose-400 text-lg mt-0.5"></i>
+                <div class="text-xs">
+                    <h4 class="font-bold text-sm text-rose-300">Peringatan:</h4>
+                    <p class="mt-0.5">{{ session('error') }}</p>
+                </div>
             </div>
         @endif
+
+        <!-- Banner Revision Needed Jika Ada -->
+        @if($registration->status === 'revision_needed')
+            <div class="p-5 rounded-3xl bg-rose-500/10 border-2 border-rose-500/40 text-rose-200 shadow-xl">
+                <div class="flex items-start space-x-3">
+                    <div class="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold text-base mt-0.5 shrink-0">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-black text-sm text-rose-300">Perhatian: Berkas Memerlukan Perbaikan!</h4>
+                        <p class="text-xs text-rose-200 mt-1 leading-relaxed">
+                            {{ $registration->catatan_koreksi ?? 'Terdapat berkas yang tidak terbaca atau belum sesuai dengan ketentuan panitia.' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Card Status Tracking Siswa -->
+        <div class="bg-slate-800 rounded-3xl border border-slate-700 p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-700 pb-6 mb-6">
+                <div>
+                    <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider bg-emerald-950/70 border border-emerald-800 px-3 py-1 rounded-full">
+                        Status Pendaftaran
+                    </span>
+                    <h2 class="text-xl sm:text-2xl font-black text-white mt-2">{{ $registration->full_name }}</h2>
+                    <p class="text-xs text-slate-400 mt-0.5 font-mono">
+                        Kode: <span class="text-emerald-400 font-bold">{{ $registration->reg_code }}</span> | NIK: {{ $registration->nik }}
+                    </p>
+                </div>
+
+                <div>
+                    @if(in_array($registration->status, ['approved', 'lunas', 'paid']))
+                        <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            <i class="fa-solid fa-circle-check mr-1.5"></i> LUNAS / DITERIMA
+                        </span>
+                    @elseif($registration->status === 'revision_needed')
+                        <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                            <i class="fa-solid fa-triangle-exclamation mr-1.5"></i> PERLU REVISI
+                        </span>
+                    @else
+                        <span class="px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            <i class="fa-solid fa-clock mr-1.5"></i> DALAM PROSES
+                        </span>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Stepper Progress Bar -->
+            <div class="grid grid-cols-4 gap-2 text-center text-xs mb-8">
+                <div class="p-3 rounded-xl border {{ $registration->id ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300' : 'bg-slate-900 border-slate-700 text-slate-500' }}">
+                    <i class="fa-solid fa-clipboard-check block mb-1 text-sm"></i>
+                    <span class="font-bold text-[11px]">1. Formulir</span>
+                </div>
+                <div class="p-3 rounded-xl border {{ in_array($registration->status, ['paid', 'lunas', 'approved']) || $registration->latestPayment ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300' : 'bg-slate-900 border-slate-700 text-slate-500' }}">
+                    <i class="fa-solid fa-receipt block mb-1 text-sm"></i>
+                    <span class="font-bold text-[11px]">2. Bayar</span>
+                </div>
+                <div class="p-3 rounded-xl border {{ in_array($registration->status, ['approved', 'lunas']) ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300' : ($registration->status === 'revision_needed' ? 'bg-rose-950/40 border-rose-500/50 text-rose-300' : 'bg-slate-900 border-slate-700 text-slate-500') }}">
+                    <i class="fa-solid fa-stamp block mb-1 text-sm"></i>
+                    <span class="font-bold text-[11px]">3. Verifikasi</span>
+                </div>
+                <div class="p-3 rounded-xl border {{ in_array($registration->status, ['approved', 'lunas']) ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300' : 'bg-slate-900 border-slate-700 text-slate-500' }}">
+                    <i class="fa-solid fa-graduation-cap block mb-1 text-sm"></i>
+                    <span class="font-bold text-[11px]">4. Lulus</span>
+                </div>
+            </div>
+
+            <!-- Action Center Buttons -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <a href="{{ route('pendaftar.pembayaran') }}" class="p-4 rounded-2xl bg-slate-900 border border-slate-700 hover:border-emerald-500 transition flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-950 text-emerald-400 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs text-white">Pembayaran</h4>
+                        <p class="text-[11px] text-slate-400">Instruksi & Upload Struk</p>
+                    </div>
+                </a>
+
+                <a href="{{ route('registration.card.pdf') }}" class="p-4 rounded-2xl bg-slate-900 border border-slate-700 hover:border-emerald-500 transition flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-950 text-blue-400 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-id-card"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs text-white">Kartu Tes (PDF)</h4>
+                        <p class="text-[11px] text-slate-400">Unduh Kartu Ujian</p>
+                    </div>
+                </a>
+
+                <a href="{{ route('stopmap.pdf', $registration->id) }}" class="p-4 rounded-2xl bg-slate-900 border border-slate-700 hover:border-emerald-500 transition flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-950 text-amber-400 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-folder"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs text-white">Lembar Stopmap</h4>
+                        <p class="text-[11px] text-slate-400">Checklist Berkas Fisik</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Tabel Berkas Terunggah -->
+        <div class="bg-slate-800 rounded-3xl border border-slate-700 p-6 shadow-xl">
+            <h3 class="font-bold text-sm text-white mb-4 flex items-center space-x-2">
+                <i class="fa-solid fa-folder-open text-emerald-400"></i>
+                <span>Kelengkapan Berkas Persyaratan Digital</span>
+            </h3>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-700 text-slate-400 font-bold uppercase tracking-wider">
+                            <th class="py-2.5 px-3">Jenis Berkas</th>
+                            <th class="py-2.5 px-3">Status Verifikasi</th>
+                            <th class="py-2.5 px-3 text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700/50">
+                        @foreach(['kk' => 'Kartu Keluarga', 'akta' => 'Akta Kelahiran', 'skl' => 'SKL / Ijazah'] as $type => $label)
+                            @php
+                                $doc = $registration->documents->firstWhere('doc_type', $type);
+                            @endphp
+                            <tr>
+                                <td class="py-3 px-3">
+                                    <strong class="text-slate-200 block">{{ $label }}</strong>
+                                    <span class="text-[10px] text-slate-500 uppercase">{{ $type }}</span>
+                                </td>
+                                <td class="py-3 px-3">
+                                    @if($doc)
+                                        @if($doc->status === 'approved')
+                                            <span class="text-emerald-400 font-bold"><i class="fa-solid fa-check mr-1"></i> Disetujui</span>
+                                        @elseif($doc->status === 'revision_needed')
+                                            <span class="text-rose-400 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Perlu Revisi</span>
+                                        @else
+                                            <span class="text-amber-400 font-bold"><i class="fa-solid fa-clock mr-1"></i> Menunggu Verifikasi</span>
+                                        @endif
+                                    @else
+                                        <span class="text-slate-500">Belum diunggah</span>
+                                    @endif
+                                </td>
+                                <td class="py-3 px-3 text-right">
+                                    <a href="{{ route('pendaftar.formulir') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold transition">
+                                        <i class="fa-solid fa-upload mr-1 text-[10px]"></i> Unggah Ulang
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
-    <!-- 1. Formulir Multistep Pendaftaran (REQ-REG-01 & REQ-REG-02) -->
-    <h3 class="section-title">1. Formulir Pendaftaran & Pilihan Jalur</h3>
-    <form action="{{ route('registration.draft') }}" method="POST">
-        @csrf
-        <fieldset @if($isLocked) disabled @endif style="border: none; padding: 0; margin: 0;">
-            <div class="form-group">
-                <label>Pilih Jalur Pendaftaran</label>
-                <select name="jalur" required>
-                    <option value="">-- Pilih Jalur --</option>
-                    <option value="zonasi" {{ old('jalur', $registration->jalur ?? '') == 'zonasi' ? 'selected' : '' }}>Zonasi</option>
-                    <option value="prestasi" {{ old('jalur', $registration->jalur ?? '') == 'prestasi' ? 'selected' : '' }}>Prestasi</option>
-                    <option value="afirmasi" {{ old('jalur', $registration->jalur ?? '') == 'afirmasi' ? 'selected' : '' }}>Afirmasi</option>
-                    <option value="perpindahan" {{ old('jalur', $registration->jalur ?? '') == 'perpindahan' ? 'selected' : '' }}>Perpindahan Tugas Orang Tua</option>
-                </select>
-            </div>
-
-            @if(!$isLocked)
-                <button type="submit" class="btn btn-primary">Simpan Draft Formulir</button>
-            @endif
-        </fieldset>
-    </form>
-
-    <!-- Tombol Finalisasi Data (REQ-REG-03) -->
-    @if(!$isLocked)
-        <form action="{{ route('registration.finalize') }}" method="POST" style="margin-top: 15px;">
-            @csrf
-            <button type="submit" class="btn btn-warning" onclick="return confirm('Apakah Anda yakin ingin mengunci data secara permanen? Data yang telah dikunci tidak dapat diubah kembali.')">
-                🔒 Finalisasi & Kunci Data Pendaftaran
-            </button>
-        </form>
-    @endif
-
-    <!-- 2. Unggah Berkas Persyaratan (REQ-FILE-01 & REQ-FILE-02) -->
-    <h3 class="section-title">2. Unggah Berkas Persyaratan (PDF/JPG/PNG max 2MB)</h3>
-    @if(!$isLocked)
-        <form action="{{ route('documents.upload') }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            <div class="form-group">
-                <label>Jenis Dokumen</label>
-                <select name="type" required>
-                    <option value="ijazah">Ijazah / Surat Keterangan Lulus</option>
-                    <option value="kk">Kartu Keluarga (KK)</option>
-                    <option value="akta">Akta Kelahiran</option>
-                    <option value="sertifikat">Sertifikat Prestasi (Opsional)</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Pilih Berkas File</label>
-                <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Unggah Berkas</button>
-        </form>
-    @else
-        <p style="color: #6c757d; font-style: italic;">Unggah berkas ditutup karena data pendaftaran telah dikunci.</p>
-    @endif
-
-    <!-- Daftar Berkas Terunggah -->
-    @if($registration && $registration->documents->count() > 0)
-        <table>
-            <thead>
-                <tr>
-                    <th>Jenis Dokumen</th>
-                    <th>Nama File Asli</th>
-                    <th>Ukuran File</th>
-                    <th>Tanggal Unggah</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($registration->documents as $doc)
-                    <tr>
-                        <td>{{ strtoupper($doc->type) }}</td>
-                        <td>{{ $doc->original_name }}</td>
-                        <td>{{ number_format($doc->file_size / 1024, 2) }} KB</td>
-                        <td>{{ $doc->created_at->format('d/m/Y H:i') }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @endif
-
-    <!-- 3. Cetak Output Dokumentasi & Pembayaran (REQ-OUT-02, REQ-OUT-03 & Modul Pembayaran) -->
-    <h3 class="section-title">3. Pembayaran Administrasi & Cetak Dokumen Resmi</h3>
-    @if($isLocked)
-        <p>Data Anda telah difinalisasi. Silakan lakukan pembayaran administrasi resmi dan unduh dokumen bukti:</p>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
-            <a href="{{ route('pendaftar.pembayaran') }}" class="btn btn-primary">
-                💳 Halaman Pembayaran Mandiri (Transfer / Kasir)
-            </a>
-            <a href="{{ route('registration.card.pdf') }}" class="btn btn-success" target="_blank">
-                📄 Unduh Kartu Pendaftaran (PDF & QR Code)
-            </a>
-            @if(in_array($status, ['paid', 'verified', 'passed']))
-                <a href="{{ route('kuitansi.pdf', $registration->id) }}" class="btn" style="background:#0284c7; color:white;" target="_blank">
-                    🧾 Unduh Kuitansi Resmi PDF
-                </a>
-            @endif
-            <a href="{{ route('stopmap.pdf', $registration->id) }}" class="btn" style="background:#475569; color:white;" target="_blank">
-                📋 Unduh Ringkasan Stopmap (PDF)
-            </a>
-            @if($status === 'passed')
-                <a href="{{ route('siswa.welcome_hub') }}" class="btn" style="background:#059669; color:white;">
-                    🎉 Buka Welcome Hub (LULUS)
-                </a>
-            @endif
-        </div>
-    @else
-        <p style="color: #6c757d;">Menu pembayaran dan cetak berkas resmi akan aktif setelah Anda melakukan <strong>Finalisasi Data</strong>.</p>
-    @endif
-</div>
+    <!-- Footer Simple -->
+    <footer class="mt-12 text-center text-xs text-slate-500">
+        <p>&copy; {{ date('Y') }} Sistem Informasi PPDB Online Terpadu.</p>
+    </footer>
 
 </body>
 </html>
