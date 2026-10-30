@@ -7,27 +7,28 @@
   * `resources/views/pdf/kuitansi.blade.php`: Kuitansi resmi LUNAS berstempel digital & QR code verifikasi.
   * `resources/views/pdf/stopmap.blade.php`: Cetak Ringkasan Stopmap 1-Halaman (One-Page Resume PDF) memuat identitas, rincian klaster, checklist berkas fisik, dan paraf verifikator.
   * `resources/views/pdf/sk_lulus.blade.php`: Cetak Surat Keputusan Kelulusan resmi ber-QR Code & stempel digital.
-- **Halaman Validasi QR Code Publik**:
-  * `resources/views/public/verify_document.blade.php`: Halaman publik terenkripsi hasil scan QR Code yang menampilkan badge "DOKUMEN TERVERIFIKASI RESMI", timestamp penerbitan, dan stempel yayasan.
-  * `resources/views/public/verify_receipt.blade.php`: Validasi keabsahan kuitansi pembayaran resmi.
-- **Dashboard Verifikator & In-App Document Preview Modal**:
-  * `resources/views/admin/verification/index.blade.php`, `show.blade.php`, dan `verifikator/dashboard.blade.php` dilengkapi inline stream preview dokumen (foto/PDF) tanpa download + quick approve & revisi form.
-- **Modul Asesmen Diagnostik (`AssessmentController.php` & `admin/assessment/index.blade.php`)**:
-  * Penilaian BTQ, jumlah juz tahfidz Al-Qur'an, literasi/numerasi, catatan wawancara, dan kalkulasi rekomendasi otomatis Alpine.js.
-- **Fitur Pemicu Notifikasi WhatsApp Direct-Link**:
-  * Tombol kirim notifikasi WhatsApp otomatis di Dashboard Verifikator dan Kasir Loket dengan format pesan resmi.
-- **Manajemen Gelombang & Kuota Dinamis (`admin/settings/index.blade.php`)**:
-  * Form admin konfigurasi kuota klaster dan pemantauan status gelombang.
-- **Executive Dashboard Analytics (`admin/dashboard.blade.php`)**:
-  * Integrasi Chart.js CDN: Grafik Donat Klaster Kurikulum Merdeka dan Bar Chart Status Verifikasi.
-- **Halaman Error Kustom (`errors/404.blade.php` & `errors/500.blade.php`)**:
-  * Halaman error terpadu tema Emerald/Teal dan tombol bantuan CS WhatsApp.
-- **Ekspor Data EMIS Kemenag & Dapodik Kemendikbud**:
-  * `AdminExportController.php`: Ekspor CSV ber-UTF-8 BOM siap impor ke sistem EMIS 4.0 dan Dapodik Kemendikbudristek.
+- **Portal Pendaftar & Siswa (Frontend UX Complete - Tailwind CDN, Alpine.js, Plus Jakarta Sans)**:
+  * `resources/views/pendaftar/formulir.blade.php`: Wizard 3-Langkah (Data Utama -> Card Klaster -> Upload Kamera HP Langsung `capture="environment"`).
+  * `resources/views/pendaftar/login.blade.php`: Floating Card Login NIK / Kode Registrasi + Tanggal Lahir (PIN) tanpa password ribet.
+  * `resources/views/pendaftar/pembayaran.blade.php`: Instruksi transfer bank resmi + 3 digit kode unik + tombol salin toast notifikasi Alpine.js + opsi loket tunai.
+  * `resources/views/pendaftar/cek_status_result.blade.php`: Kartu hasil pencarian NIK publik tanpa login + tracking stepper + alert box merah jika `revision_needed`.
+  * `resources/views/pendaftar/welcome_hub.blade.php`: Selebrasi kelulusan siswa, info MATSAMA, seragam, dan action hub unduh SK Lulus PDF, Kuitansi Lunas PDF, Stopmap PDF.
+  * `resources/views/student/dashboard.blade.php`: Portal dashboard siswa modern memuat ringkasan kelengkapan berkas, tracking status, dan link cepat unduh dokumen.
+- **Dashboard Panitia, Verifikator, Kasir & Admin**:
+  * `resources/views/admin/dashboard.blade.php`: Executive live analytics dengan Chart.js (Donut Klaster & Bar Chart Status Verifikasi).
+  * `resources/views/admin/verification/index.blade.php` & `verifikator/dashboard.blade.php`: In-App Document Preview Modal Alpine.js (buka gambar/PDF langsung tanpa download) + Quick Approve/Revisi form.
+  * `resources/views/admin/kasir/index.blade.php`: Mode kasir offline bendahara pencarian instan + proses bayar tunai sekali klik (status PAID & kuitansi resmi).
+  * `resources/views/admin/assessment/index.blade.php`: Penguji asesmen input skor BTQ, Tahfidz, Literasi, dan kalkulasi rekomendasi otomatis.
+  * `resources/views/admin/settings/index.blade.php`: Pengaturan kuota dinamis per klaster Kurikulum Merdeka.
+- **Public Verification & Halaman Error**:
+  * `resources/views/public/verify_document.blade.php`: Validasi scan QR Code kuitansi & SK lulus ("DOKUMEN TERVERIFIKASI RESMI").
+  * `resources/views/errors/404.blade.php` & `errors/500.blade.php`: Halaman error bertema Emerald/Teal dengan tombol bantuan WhatsApp CS.
+- **Ekspor Data EMIS & Dapodik**:
+  * `AdminExportController.php`: Format CSV ber-UTF-8 BOM siap impor ke EMIS Kemenag & Dapodik Kemendikbud.
 - **Pengujian**: 10/10 test files passed (112 assertions, 0 failed).
 
 ### In Progress
-- Penyiapan automasi CI/CD pada repositori Git.
+- CI/CD workflow pada GitHub Actions.
 
 ### Backlog
 - Rilis production dan hosting setup.

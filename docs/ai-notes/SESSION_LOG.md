@@ -2,19 +2,21 @@
 
 ## Tanggal: 30 Oktober 2026
 
-### Upgrade Fitur Tingkat Lanjut (Enterprise-Grade Polishing):
-1. **Modul Asesmen Diagnostik (`AssessmentController.php` & `admin/assessment/index.blade.php`)**:
-   - Membangun antarmuka penguji untuk menilai Baca Tulis Al-Qur'an (BTQ), capaian tahfidz hafalan juz, dan tes literasi/numerasi dasar.
-   - Perhitungan rata-rata nilai dan rekomendasi kelulusan otomatis secara reaktif dengan Alpine.js.
-2. **Pemicu Notifikasi WhatsApp Direct-Link**:
-   - Tombol kirim notifikasi WhatsApp otomatis di Dashboard Verifikator dan Kasir Loket dengan format pesan resmi dan tautan `wa.me`.
-3. **Manajemen Gelombang & Kuota Dinamis (`admin/settings/index.blade.php`)**:
-   - Fitur admin untuk mengatur dan memperbarui kuota masing-masing klaster Kurikulum Merdeka secara realtime.
-4. **Executive Dashboard Analytics & Chart.js (`admin/dashboard.blade.php`)**:
-   - Integrasi Chart.js CDN untuk visualisasi donat klaster peminatan siswa serta grafik bar tahapan status pendaftaran.
-5. **Halaman Error Kustom (`errors/404.blade.php` & `errors/500.blade.php`)**:
-   - Halaman respon 404 (Not Found) dan 500 (Server Error) dengan palet Emerald/Teal dan tombol bantuan langsung ke WhatsApp Panitia.
-6. **Eksekusi Pembersihan Cache & Pengujian**:
-   - `config:clear`, `route:clear`, `view:clear` berhasil dijalankan.
-   - Status 5 container Docker Compose: `app`, `db`, `redis`, `webserver`, `phpmyadmin` UP & Healthy.
-   - Seluruh test suite (`php artisan test`) lulus 100% (10 tests, 112 assertions, 0 failed).
+### Penyempurnaan Seluruh Blade Views & Frontend UX Siswa:
+1. **Penyempurnaan `resources/views/student/dashboard.blade.php`**:
+   - Ditulis ulang secara utuh ber-CDN Tailwind CSS, Plus Jakarta Sans, FontAwesome 6, dan Alpine.js 3 tanpa ketergantungan build Vite.
+   - Dilengkapi visual tracking progress registrasi, banner peringatan merah/kuning jika ada catatan perbaikan dokumen dari verifikator, serta tombol aksi cepat untuk mengunduh dokumen kuitansi, stopmap, dan menuju pembayaran.
+2. **Pengecekan & Verifikasi Konsistensi Seluruh Template Blade**:
+   - `resources/views/pendaftar/pembayaran.blade.php`: Instruksi rekening bank sekolah, tagihan 3-digit kode unik, tombol salin ber-toast Alpine.js, pratinjau struk bayar, dan opsi loket tunai.
+   - `resources/views/pendaftar/cek_status_result.blade.php`: Pencarian NIK publik, badge warna status (Lunas/Diterima, Dalam Verifikasi, Perlu Revisi), dan alert koreksi.
+   - `resources/views/pendaftar/welcome_hub.blade.php`: Selebrasi kelulusan santri, info orientasi MATSAMA, seragam madrasah, dan tombol unduh SK Lulus, Kuitansi, dan Stopmap PDF.
+   - `resources/views/admin/dashboard.blade.php`: Live analytics dengan Chart.js.
+   - `resources/views/admin/verification/index.blade.php`: In-App Document Preview Modal inline foto/PDF tanpa paksaan unduh file.
+   - `resources/views/admin/kasir/index.blade.php`: Mode kasir pembayaran tunai instan di loket sekolah.
+   - `resources/views/admin/assessment/index.blade.php`: Form asesmen diagnostik penguji BTQ, Tahfidz, Literasi.
+   - `resources/views/public/verify_document.blade.php`: Halaman keabsahan resmi hasil scan QR Code smartphone.
+   - `resources/views/errors/404.blade.php` & `errors/500.blade.php`: Halaman error bertema Emerald/Teal dan tombol bantuan CS WA.
+3. **Pembersihan Cache, Pengujian & Status Diagnostik**:
+   - Eksekusi `config:clear`, `route:clear`, `view:clear`, dan `storage:link`.
+   - Diagnostik `./scripts/ai-project-status.sh` mengonfirmasi 5/5 container Docker Compose UP & Healthy.
+   - Test suite Laravel: **10 passed, 112 assertions, 0 failed**.

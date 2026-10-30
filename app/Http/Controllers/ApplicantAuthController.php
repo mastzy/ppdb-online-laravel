@@ -28,64 +28,77 @@ class ApplicantAuthController extends Controller
      */
     public function login(Request $request): RedirectResponse
     {
-        $loginType = $request->input('login_type', 'nik_dob');
+        $identifier = trim($request->input('identifier', $request->input('nik', $request->input('reg_code', ''))));
+        $dobInput = trim($request->input('dob', ''));
 
-        if ($loginType === 'reg_code') {
-            $request->validate([
-                'reg_code' => 'required|string|max:50',
-            ], [
-                'reg_code.required' => 'Kode Registrasi wajib diisi.',
-            ]);
+        // Jika form mengirim identifier gabungan (NIK 16 digit atau Kode Pendaftaran)
+        if (!empty($identifier)) {
+            // Cek apakah identifier adalah Kode Registrasi (mengandung PPDB atau huruf)
+            if (preg_match('/[a-zA-Z]/', $identifier)) {
+                $applicant = Registration::where('reg_code', strtoupper($identifier))->first();
 
-            $regCode = strtoupper(trim($request->input('reg_code')));
-            $applicant = Registration::where('reg_code', $regCode)->first();
+                // Jika pendaftar memasukkan tanggal lahir untuk verifikasi tambahan
+                if ($applicant && !empty($dobInput)) {
+                    $dob = $this->parseDob($dobInput);
+                    if ($dob && $applicant->dob && $applicant->dob->format('Y-m-d') !== $dob) {
+                        return back()->withInput()->with('error', 'Tanggal Lahir tidak cocok dengan Kode Pendaftaran ini.');
+                    }
+                }
+            } else {
+                // Berarti NIK 16 digit
+                $request->validate([
+                    'identifier' => 'sometimes|digits:16',
+                    'nik' => 'sometimes|digits:16',
+                    'dob' => 'required|string',
+                ], [
+                    'identifier.digits' => 'NIK harus berjumlah tepat 16 digit.',
+                    'nik.digits' => 'NIK harus berjumlah tepat 16 digit.',
+                    'dob.required' => 'Tanggal Lahir wajib diisi sebagai PIN masuk.',
+                ]);
+
+                $dob = $this->parseDob($dobInput);
+                if (!$dob) {
+                    return back()->withInput()->with('error', 'Format tanggal lahir tidak valid. Gunakan format DDMMYYYY (contoh: 15052010) atau pilih dari kalender.');
+                }
+
+                $applicant = Registration::byNikAndDob($identifier, $dob)->first();
+            }
         } else {
-            $request->validate([
-                'nik' => 'required|digits:16',
-                'dob' => 'required|string',
-            ], [
-                'nik.required' => 'NIK 16 digit wajib diisi.',
-                'nik.digits' => 'NIK harus berjumlah tepat 16 digit.',
-                'dob.required' => 'Tanggal Lahir wajib diisi.',
-            ]);
-
-            $nik = trim($request->input('nik'));
-            $dobInput = trim($request->input('dob'));
-
-            // Mendukung format DDMMYYYY (misal: 15052010) atau YYYY-MM-DD dari HTML datepicker
-            $dob = null;
-            if (preg_match('/^\d{8}$/', $dobInput)) {
-                try {
-                    $dob = Carbon::createFromFormat('dmY', $dobInput)->format('Y-m-d');
-                } catch (\Exception $e) {
-                    $dob = null;
-                }
-            } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dobInput)) {
-                $dob = $dobInput;
-            } elseif (preg_match('/^\d{2}-\d{2}-\d{4}$/', $dobInput)) {
-                try {
-                    $dob = Carbon::createFromFormat('d-m-Y', $dobInput)->format('Y-m-d');
-                } catch (\Exception $e) {
-                    $dob = null;
-                }
-            }
-
-            if (! $dob) {
-                return back()->withInput()->with('error', 'Format tanggal lahir tidak valid. Gunakan format DDMMYYYY (contoh: 15052010).');
-            }
-
-            $applicant = Registration::byNikAndDob($nik, $dob)->first();
+            return back()->withInput()->with('error', 'Silakan masukkan NIK 16 digit atau Kode Pendaftaran Anda.');
         }
 
         if (! $applicant) {
-            return back()->withInput()->with('error', 'Data pendaftaran tidak ditemukan. Mohon periksa kembali NIK dan Tanggal Lahir atau Kode Registrasi Anda.');
+            return back()->withInput()->with('error', 'Data pendaftaran tidak ditemukan. Pastikan NIK dan Tanggal Lahir atau Kode Pendaftaran yang dimasukkan sudah benar.');
         }
 
         // Simpan sesi autentikasi pendaftar
         session(['applicant_id' => $applicant->id]);
 
         return redirect()->route('pendaftar.formulir')
-            ->with('success', 'Selamat datang kembali, '.$applicant->full_name.'! Silakan lanjutkan pendaftaran Anda.');
+            ->with('success', 'Selamat datang kembali, '.$applicant->full_name.'! Kuota dan data pendaftaran Anda aktif.');
+    }
+
+    /**
+     * Helper parsing berbagai variasi format tanggal lahir.
+     */
+    private function parseDob(string $input): ?string
+    {
+        if (preg_match('/^\d{8}$/', $input)) {
+            try {
+                return Carbon::createFromFormat('dmY', $input)->format('Y-m-d');
+            } catch (\Exception $e) {
+                return null;
+            }
+        } elseif (preg_match('/^\d{4}-\d{2}-\d{2}$/', $input)) {
+            return $input;
+        } elseif (preg_match('/^\d{2}-\d{2}-\d{4}$/', $input)) {
+            try {
+                return Carbon::createFromFormat('d-m-Y', $input)->format('Y-m-d');
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+        return null;
     }
 
     /**
