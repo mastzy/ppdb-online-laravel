@@ -1,6 +1,6 @@
 ## Tasks Overview
 
-### Done
+### Done (Phases 1‑5 100% Completed)
 - Project scaffolding with Laravel 11 & Docker Compose (app, webserver, db, redis, phpmyadmin).
 - Registration flow, zero-friction applicant authentication, verifikator verification, and offline cash register.
 - **Generator PDF & QR Code (DomPDF & Simple-QRCode)**:
