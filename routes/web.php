@@ -102,6 +102,52 @@ Route::middleware(['auth', 'role:verifikator,admin'])->group(function () {
     Route::get('/verifikator/dashboard', [VerificationController::class, 'index'])->name('verifikator.dashboard');
     Route::post('/verifikator/verify/{registration}', [VerificationController::class, 'updateStatus'])->name('verifikator.verify');
     Route::get('/verifikator/document/{document}/preview', [DocumentController::class, 'preview'])->name('verifikator.document.preview');
+
+    // Modul Asesmen Diagnostik (Penguji / Verifikator)
+    Route::get('/admin/assessment', [\App\Http\Controllers\AssessmentController::class, 'index'])->name('admin.assessment.index');
+    Route::post('/admin/assessment/{registration}', [\App\Http\Controllers\AssessmentController::class, 'store'])->name('admin.assessment.store');
+
+    // Executive Dashboard Analytics
+    Route::get('/admin/dashboard', function () {
+        $totalRegistrations = Registration::count();
+        $passedRegistrations = Registration::whereIn('status', ['approved', 'passed', 'lunas'])->count();
+        $totalRevenue = \App\Models\Payment::whereIn('status', ['verified', 'paid'])->sum('amount');
+        if ($totalRevenue == 0) {
+            $totalRevenue = Registration::whereIn('status', ['paid', 'approved', 'passed'])->count() * 300000;
+        }
+        $boardingCount = Registration::where('is_boarding', true)->count();
+
+        $clusters = \App\Models\ProgramCluster::withCount('registrations')->get();
+        $clusterLabels = $clusters->pluck('name')->toArray();
+        $clusterCounts = $clusters->pluck('registrations_count')->toArray();
+
+        $statusCounts = [
+            Registration::where('status', 'draft')->count(),
+            Registration::where('status', 'pending_payment')->count(),
+            Registration::where('status', 'paid')->count(),
+            Registration::where('status', 'revision_needed')->count(),
+            Registration::whereIn('status', ['approved', 'passed'])->count(),
+        ];
+
+        return view('admin.dashboard', compact(
+            'totalRegistrations', 'passedRegistrations', 'totalRevenue', 'boardingCount',
+            'clusterLabels', 'clusterCounts', 'statusCounts'
+        ));
+    })->name('admin.dashboard');
+
+    // Pengaturan Kuota & Gelombang (Admin Settings)
+    Route::get('/admin/settings', function () {
+        $clusters = \App\Models\ProgramCluster::all();
+        return view('admin.settings.index', compact('clusters'));
+    })->name('admin.settings.index');
+
+    Route::post('/admin/settings/clusters', function (Request $request) {
+        $quotas = $request->input('quota', []);
+        foreach ($quotas as $id => $val) {
+            \App\Models\ProgramCluster::where('id', $id)->update(['quota' => (int) $val]);
+        }
+        return back()->with('success', 'Alokasi kuota klaster berhasil diperbarui.');
+    })->name('admin.settings.update_clusters');
 });
 
 

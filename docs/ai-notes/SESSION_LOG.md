@@ -2,21 +2,19 @@
 
 ## Tanggal: 30 Oktober 2026
 
-### Penyelesaian Menyeluruh Backend, PDF Generator, Admin Workflow & Export Data:
-1. **Generator PDF & Validasi QR Code**:
-   - `ReceiptController.php`: Menghasilkan kuitansi pembayaran sah berstempel digital (`public/images/stempel_lunas.png`) dan QR Code SVG base64 terenkripsi.
-   - `StopmapResumeController.php`: Menghasilkan lembar ringkasan stopmap 1-halaman A4 portrait (One-Page Resume PDF) untuk ditempel pada map fisik pendaftar saat wawancara/daftar ulang.
-   - Dibuat rute dan template `resources/views/pdf/sk_lulus.blade.php`: Surat Keputusan Kelulusan resmi siswa diterima ber-QR Code validasi.
-   - Dibuat alias template `pdf/kuitansi.blade.php` dan `pdf/stopmap.blade.php`.
-2. **Validasi QR Code Publik**:
-   - `resources/views/public/verify_document.blade.php` dan `public/verify_receipt.blade.php` dipercantik menggunakan Tailwind CDN, menampilkan indikator centang hijau "DOKUMEN RESMI TERVERIFIKASI", rincian siswa, serta stempel digital yayasan.
-3. **Dashboard Verifikator & In-App Document Preview Modal**:
-   - Modal preview berkas Alpine.js pada `admin/verification/index.blade.php`, `show.blade.php`, dan `verifikator/dashboard.blade.php` memfasilitasi panitia memeriksa berkas foto/PDF tanpa perlu mengunduh file, disertai tombol quick decision *Approved* / *Minta Revisi* dengan catatan wajib.
-4. **Mode Kasir Offline Bendahara**:
-   - `admin/kasir/index.blade.php` dan `bendahara/kasir.blade.php` siap digunakan untuk pencarian pendaftar offline dan pemrosesan bayar tunai sekali klik dengan nomor kuitansi otomatis.
-5. **Ekspor Data EMIS & Dapodik**:
-   - `AdminExportController.php` telah memfasilitasi unduhan CSV/Excel UTF-8 BOM yang skema kolomnya 100% kompatibel dengan format impor massal EMIS Kemenag dan Dapodik Kemendikbud.
+### Upgrade Fitur Tingkat Lanjut (Enterprise-Grade Polishing):
+1. **Modul Asesmen Diagnostik (`AssessmentController.php` & `admin/assessment/index.blade.php`)**:
+   - Membangun antarmuka penguji untuk menilai Baca Tulis Al-Qur'an (BTQ), capaian tahfidz hafalan juz, dan tes literasi/numerasi dasar.
+   - Perhitungan rata-rata nilai dan rekomendasi kelulusan otomatis secara reaktif dengan Alpine.js.
+2. **Pemicu Notifikasi WhatsApp Direct-Link**:
+   - Tombol kirim notifikasi WhatsApp otomatis di Dashboard Verifikator dan Kasir Loket dengan format pesan resmi dan tautan `wa.me`.
+3. **Manajemen Gelombang & Kuota Dinamis (`admin/settings/index.blade.php`)**:
+   - Fitur admin untuk mengatur dan memperbarui kuota masing-masing klaster Kurikulum Merdeka secara realtime.
+4. **Executive Dashboard Analytics & Chart.js (`admin/dashboard.blade.php`)**:
+   - Integrasi Chart.js CDN untuk visualisasi donat klaster peminatan siswa serta grafik bar tahapan status pendaftaran.
+5. **Halaman Error Kustom (`errors/404.blade.php` & `errors/500.blade.php`)**:
+   - Halaman respon 404 (Not Found) dan 500 (Server Error) dengan palet Emerald/Teal dan tombol bantuan langsung ke WhatsApp Panitia.
 6. **Eksekusi Pembersihan Cache & Pengujian**:
-   - Menjalankan `config:clear`, `route:clear`, `view:clear`, dan `storage:link`.
-   - Test suite `php artisan test` sukses 100% (10 passed, 112 assertions, 0 failed).
-   - Seluruh 5 container Docker Compose (`app`, `db`, `redis`, `webserver`, `phpmyadmin`) terpantau sehat dan aktif.
+   - `config:clear`, `route:clear`, `view:clear` berhasil dijalankan.
+   - Status 5 container Docker Compose: `app`, `db`, `redis`, `webserver`, `phpmyadmin` UP & Healthy.
+   - Seluruh test suite (`php artisan test`) lulus 100% (10 tests, 112 assertions, 0 failed).

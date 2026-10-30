@@ -176,6 +176,20 @@
                                         <a href="{{ route('stopmap.pdf', $registration->id) }}" target="_blank" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow transition">
                                             <i class="fa-solid fa-file-lines mr-1.5"></i> Cetak Stopmap Map
                                         </a>
+                                        @php
+                                            $cleanPhone = preg_replace('/[^0-9]/', '', $registration->phone_number ?? '');
+                                            if (str_starts_with($cleanPhone, '0')) {
+                                                $cleanPhone = '62' . substr($cleanPhone, 1);
+                                            }
+                                            $waMsg = urlencode("Assalamu'alaikum, Yth. Orang Tua/Wali {$registration->full_name}. Pembayaran PPDB pendaftar dengan Kode: {$registration->reg_code} sebesar Rp " . number_format($fee, 0, ',', '.') . " telah LUNAS via loket kasir sekolah. Kuitansi resmi dapat diunduh di portal.");
+                                        @endphp
+                                        @if($cleanPhone)
+                                            <a href="https://wa.me/{{ $cleanPhone }}?text={{ $waMsg }}" target="_blank"
+                                               class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow transition flex items-center space-x-1.5">
+                                                <i class="fa-brands fa-whatsapp text-sm"></i>
+                                                <span>Kirim Kuitansi WA</span>
+                                            </a>
+                                        @endif
                                     </div>
                                 @endif
                             </div>

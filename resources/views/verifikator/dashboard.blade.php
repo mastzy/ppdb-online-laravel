@@ -65,11 +65,20 @@
             </div>
 
             <div class="flex items-center space-x-2 sm:space-x-3">
+                <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-100 text-slate-800 border border-slate-200 text-xs font-bold hover:bg-slate-200 transition">
+                    <i class="fa-solid fa-chart-line mr-1.5 text-slate-700"></i> Analitik
+                </a>
+                <a href="{{ route('admin.assessment.index') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-teal-50 text-teal-700 border border-teal-200 text-xs font-bold hover:bg-teal-100 transition">
+                    <i class="fa-solid fa-clipboard-check mr-1.5 text-teal-600"></i> Asesmen
+                </a>
+                <a href="{{ route('admin.settings.index') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold hover:bg-slate-100 transition">
+                    <i class="fa-solid fa-sliders mr-1.5 text-slate-600"></i> Kuota
+                </a>
                 <a href="{{ route('admin.export.emis') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold hover:bg-emerald-100 transition" title="Ekspor Data Format EMIS Kemenag">
-                    <i class="fa-solid fa-file-excel mr-1.5 text-emerald-600"></i> Ekspor EMIS
+                    <i class="fa-solid fa-file-excel mr-1.5 text-emerald-600"></i> EMIS
                 </a>
                 <a href="{{ route('admin.export.dapodik') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-teal-50 text-teal-700 border border-teal-200 text-xs font-bold hover:bg-teal-100 transition" title="Ekspor Data Format Dapodik Kemendikbud">
-                    <i class="fa-solid fa-file-csv mr-1.5 text-teal-600"></i> Ekspor Dapodik
+                    <i class="fa-solid fa-file-csv mr-1.5 text-teal-600"></i> Dapodik
                 </a>
                 @if(in_array(auth()->user()->role, ['admin', 'bendahara']))
                     <a href="{{ route('bendahara.kasir') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold hover:bg-amber-100 transition">
@@ -181,11 +190,26 @@
                                     <span class="text-[11px] text-slate-400">Berkas: <strong>{{ $reg->documents->count() }}</strong> file</span>
                                 </td>
                                 <td class="py-3.5 px-4 text-center">
-                                    <button type="button" 
-                                            @click="openModal({{ json_encode($reg) }})"
-                                            class="inline-flex items-center px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition">
-                                        <i class="fa-solid fa-magnifying-glass mr-1.5"></i> Periksa Berkas
-                                    </button>
+                                    <div class="flex items-center justify-center space-x-1.5">
+                                        <button type="button" 
+                                                @click="openModal({{ json_encode($reg) }})"
+                                                class="inline-flex items-center px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition">
+                                            <i class="fa-solid fa-magnifying-glass mr-1.5"></i> Periksa
+                                        </button>
+                                        @php
+                                            $cleanPhone = preg_replace('/[^0-9]/', '', $reg->phone_number ?? '');
+                                            if (str_starts_with($cleanPhone, '0')) {
+                                                $cleanPhone = '62' . substr($cleanPhone, 1);
+                                            }
+                                            $waMsg = urlencode("Assalamu'alaikum, Yth. Orang Tua/Wali {$reg->full_name} (Kode: {$reg->reg_code}). Informasi status pendaftaran PPDB Anda saat ini: " . strtoupper($reg->status) . ($reg->catatan_koreksi ? ". Catatan: {$reg->catatan_koreksi}" : "") . ". Silakan cek di portal resmi.");
+                                        @endphp
+                                        @if($cleanPhone)
+                                            <a href="https://wa.me/{{ $cleanPhone }}?text={{ $waMsg }}" target="_blank"
+                                               class="p-1.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition" title="Kirim Notifikasi WhatsApp">
+                                                <i class="fa-brands fa-whatsapp text-sm"></i>
+                                            </a>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty
