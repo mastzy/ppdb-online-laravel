@@ -11,6 +11,18 @@ use Tests\TestCase;
 
 class PPDBFlowTest extends TestCase
 {
+    use RefreshDatabase;
+
+    /**
+     * Seed essential data before each test.
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(\Database\Seeders\UserSeeder::class);
+        $this->seed(\Database\Seeders\ProgramClusterSeeder::class);
+    }
+
     /**
      * Test 1: Pendaftaran Step 1 (Memastikan NIK & Nama berhasil masuk database & menerbitkan Kode Registrasi).
      */
@@ -111,4 +123,3 @@ class PPDBFlowTest extends TestCase
         $this->assertTrue(str_contains($dapodikResponse->headers->get('content-disposition'), 'Dapodik_Kemendikbud'));
     }
 }
-
