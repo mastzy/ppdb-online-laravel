@@ -61,7 +61,9 @@ Route::prefix('pendaftar')->name('pendaftar.')->group(function () {
     // Tahapan lanjutan dilindungi oleh middleware applicant.auth
     Route::middleware('applicant.auth')->group(function () {
         Route::post('/step-2', [ApplicantRegistrationController::class, 'saveStep2'])->name('step2');
-        Route::post('/step-3', [ApplicantRegistrationController::class, 'saveStep3'])->name('step3');
+        Route::post('/step3', [ApplicantRegistrationController::class, 'saveStep3'])->name('save_step3');
+        // Alias without dash for compatibility
+        Route::post('/step3', [ApplicantRegistrationController::class, 'saveStep3'])->name('save_step3');
         Route::post('/check-sibling', [ApplicantRegistrationController::class, 'checkSibling'])->name('check_sibling');
         Route::post('/upload-document', [ApplicantRegistrationController::class, 'uploadDocument'])->name('upload_document');
         Route::post('/finalize', [ApplicantRegistrationController::class, 'finalize'])->name('finalize');

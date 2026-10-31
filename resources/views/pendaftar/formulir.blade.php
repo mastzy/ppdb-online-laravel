@@ -64,7 +64,7 @@
 
     <!-- Main Container Multistep Wizard -->
     <main class="max-w-4xl mx-auto px-4 py-8"
-          x-data="{
+          x-data="{\n                step: {{ $applicant ? ($applicant->status === 'draft' ? ($applicant->cluster_id ? 3 : 2) : 1) : 1 }},\n                regCode: '{{ $applicant->reg_code ?? '' }}',\n                selectedCluster: {{ $applicant->cluster_id ?? 'null' }},\n                isBoarding: {{ $applicant && $applicant->is_boarding ? '1' : '0' }},\n                hasSibling: {{ $applicant && $applicant->has_sibling_discount ? '1' : '0' }},\n                siblingNisn: '{{ $applicant->sibling_nisn ?? '' }}',\n                siblingChecking: false,\n                siblingMessage: '',\n                siblingValid: false,\n                docs: {\n                    kk: '{{ isset($documents['kk']) ? asset('storage/'.$documents['kk']->file_path) : '' }}',\n                    akta: '{{ isset($documents['akta']) ? asset('storage/'.$documents['akta']->file_path) : '' }}',\n                    skl: '{{ isset($documents['skl']) ? asset('storage/'.$documents['skl']->file_path) : '' }}'\n                },\n                // New fields for parent data (step 3)\n                parent_name: '{{ $applicant->parent_name ?? '' }}',\n                parent_job: '{{ $applicant->parent_job ?? '' }}',\n                mother_name: '{{ $applicant->mother_name ?? '' }}',\n                mother_job: '{{ $applicant->mother_job ?? '' }}',\n                parent_phone: '{{ $applicant->parent_phone ?? '' }}',\n                checkSiblingDiscount() {
               step: {{ $applicant ? ($applicant->status === 'draft' ? ($applicant->cluster_id ? 3 : 2) : 1) : 1 }},
               regCode: '{{ $applicant?->reg_code ?? '' }}',
               selectedCluster: {{ $applicant?->cluster_id ?? 'null' }},
@@ -498,6 +498,66 @@
                 </div>
             </div>
 
+            <!-- Diskon Saudara Kandung (Sibling Discount) -->
+            
+            <!-- Parent Data Inputs (Step 3) -->
+            <form action="{{ route('pendaftar.save_step3') }}" method="POST" class="mb-8 p-5 rounded-2xl bg-slate-900/70 border border-slate-700">
+                @csrf
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <!-- Nama Ayah -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">Nama Ayah</label>
+                        <input type="text" name="parent_name" x-model="parent_name" placeholder="Budi Santoso" required
+                               class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500 @error('parent_name') border-red-500 @enderror">
+                        @error('parent_name')
+                            <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <!-- Pekerjaan Ayah -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">Pekerjaan Ayah</label>
+                        <input type="text" name="parent_job" x-model="parent_job" placeholder="Wiraswasta"
+                               class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500 @error('parent_job') border-red-500 @enderror">
+                        @error('parent_job')
+                            <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <!-- Nama Ibu -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">Nama Ibu</label>
+                        <input type="text" name="mother_name" x-model="mother_name" placeholder="Siti Aminah"
+                               class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <!-- Pekerjaan Ibu -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">Pekerjaan Ibu</label>
+                        <input type="text" name="mother_job" x-model="mother_job" placeholder="Guru"
+                               class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                    <!-- No. HP Orang Tua -->
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-300 mb-1.5">No. HP Orang Tua</label>
+                        <input type="tel" name="parent_phone" x-model="parent_phone" placeholder="081234567890" required
+                               class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500 @error('parent_phone') border-red-500 @enderror">
+                        @error('parent_phone')
+                            <p class="text-rose-400 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+                <!-- Auto‑Isi Data Test Button -->
+                <div class="mt-4 flex justify-end">
+                    <button type="button" @click="parent_name='Budi Santoso'; parent_job='Wiraswasta'; mother_name='Siti Aminah'; mother_job='Guru'; parent_phone='081234567890'"
+                            class="px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-teal-400">
+                        ⚡ Auto‑Isi Data Test
+                    </button>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button type="submit" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm">
+                        Simpan Data Orang Tua & Lanjut
+                    </button>
+                </div>
+            </form>
+            
             <!-- Diskon Saudara Kandung (Sibling Discount) -->
             <div class="mb-8 p-5 rounded-2xl bg-slate-900/70 border border-slate-700">
                 <div class="flex items-center justify-between mb-2">

@@ -10,6 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f766e">
+<meta name="apple-mobile-web-app-capable" content="yes">
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
@@ -187,5 +190,25 @@
         </div>
     </footer>
 
+<!-- Service Worker registration -->
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+    }
+</script>
+
+<!-- PWA install banner -->
+<div x-data="{ deferredPrompt: null, showBanner: false }" x-init="
+    window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        deferredPrompt = e;
+        showBanner = true;
+    });
+">
+    <div x-show="showBanner" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-teal-700 text-white rounded-lg shadow-lg flex items-center space-x-3 px-4 py-2 z-50">
+        <span class="font-medium">Pasang Aplikasi PPDB</span>
+        <button @click="deferredPrompt.prompt(); deferredPrompt.userChoice.then(choice => { if (choice.outcome === 'accepted') { console.log('PWA installed'); } showBanner = false; deferredPrompt = null; });" class="bg-white text-teal-700 rounded px-2 py-1 text-sm">Install</button>
+    </div>
+</div>
 </body>
 </html>

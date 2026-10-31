@@ -173,15 +173,14 @@ class ApplicantRegistrationController extends Controller
         $applicant = $this->getAuthenticatedApplicant($request);
 
         $request->validate([
-            'parent_name' => 'required|string|max:255',
-            'parent_phone' => 'required|string|max:20',
+            'parent_name' => 'nullable|string|max:255',
+            'parent_phone' => 'nullable|string|max:20',
             'parent_job' => 'nullable|string|max:255',
             'has_sibling_discount' => 'nullable|boolean',
             'sibling_nisn' => 'nullable|string|max:10',
             'sibling_name' => 'nullable|string|max:255',
         ], [
-            'parent_name.required' => 'Nama orang tua / wali wajib diisi.',
-            'parent_phone.required' => 'Nomor HP orang tua / wali wajib diisi.',
+
         ]);
 
         $applicant->update([

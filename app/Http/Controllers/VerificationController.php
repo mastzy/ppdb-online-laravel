@@ -10,7 +10,7 @@ class VerificationController extends Controller
     // REQ-VERIF-01: Dashboard Verifikator & Filtering
     public function index(Request $request)
     {
-        $query = Registration::with(['user', 'documents']);
+        $query = Registration::with(['documents']);
 
         if ($request->filled('jalur')) {
             $query->where('jalur', $request->jalur);
