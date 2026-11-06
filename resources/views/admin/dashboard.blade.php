@@ -42,6 +42,9 @@
                 <a href="{{ route('verifikator.dashboard') }}" class="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold hover:bg-emerald-100 transition">
                     <i class="fa-solid fa-user-check mr-1"></i> Verifikator
                 </a>
+                <a href="{{ route('panitia.profil') }}" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold hover:bg-slate-200 transition" title="Pengaturan Profil">
+                    <i class="fa-solid fa-user-gear mr-1"></i> Profil
+                </a>
                 <form action="{{ route('logout') }}" method="POST" class="inline">
                     @csrf
                     <button type="submit" class="p-2 text-slate-400 hover:text-rose-600 transition" title="Logout">
@@ -123,17 +126,17 @@
                 </div>
             </div>
 
-            <!-- Chart 2: Status Verifikasi Pendaftar -->
+            <!-- Chart 2: Tren Pendaftaran 7 Hari Terakhir -->
             <div class="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col justify-between">
                 <div class="border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
                     <div>
-                        <h3 class="font-extrabold text-slate-900 text-sm">Status Alur Berkas Registrasi</h3>
-                        <p class="text-xs text-slate-400">Tahapan Pendaftar Berjalan</p>
+                        <h3 class="font-extrabold text-slate-900 text-sm">Tren Pendaftaran 7 Hari Terakhir</h3>
+                        <p class="text-xs text-slate-400">Jumlah pendaftar per hari</p>
                     </div>
-                    <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">Live Status</span>
+                    <span class="text-xs font-bold text-teal-700 bg-teal-50 px-2 py-1 rounded-lg">Pendaftaran Harian</span>
                 </div>
                 <div class="relative h-64 flex items-center justify-center">
-                    <canvas id="statusChart"></canvas>
+                    <canvas id="trendChart"></canvas>
                 </div>
             </div>
         </div>
@@ -166,9 +169,9 @@
             new Chart(ctxCluster, {
                 type: 'doughnut',
                 data: {
-                    labels: {!! json_encode($clusterLabels) !!},
+                    labels: {!! json_encode($clusterLabels ?? []) !!},
                     datasets: [{
-                        data: {!! json_encode($clusterCounts) !!},
+                        data: {!! json_encode($quotaPercentages ?? []) !!},
                         backgroundColor: ['#0f766e', '#059669', '#0284c7', '#d97706', '#64748b'],
                         borderWidth: 2,
                         borderColor: '#ffffff'
@@ -183,28 +186,24 @@
                 }
             });
 
-            // 2. Status Chart (Bar)
-            const ctxStatus = document.getElementById('statusChart').getContext('2d');
-            new Chart(ctxStatus, {
+            // 2. Trend Chart (Bar) - 7 day registration trend
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            new Chart(ctxTrend, {
                 type: 'bar',
                 data: {
-                    labels: ['Draft / Pending', 'Menunggu Bayar', 'Sudah Bayar', 'Perlu Revisi', 'Approved / Lulus'],
+                    labels: {!! json_encode($trendLabels ?? []) !!},
                     datasets: [{
-                        label: 'Jumlah Siswa',
-                        data: {!! json_encode($statusCounts) !!},
-                        backgroundColor: ['#94a3b8', '#f59e0b', '#0284c7', '#f43f5e', '#10b981'],
-                        borderRadius: 8
+                        label: 'Pendaftar',
+                        data: {!! json_encode($trendData ?? []) !!},
+                        backgroundColor: '#059669',
+                        borderRadius: 6
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true, ticks: { precision: 0 } }
-                    }
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
                 }
             });
         });

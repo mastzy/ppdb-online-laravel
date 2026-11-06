@@ -13,6 +13,8 @@ use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\StopmapResumeController;
 use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\WelcomeHubController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Models\Registration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -110,32 +112,7 @@ Route::middleware(['auth', 'role:verifikator,admin'])->group(function () {
     Route::post('/admin/assessment/{registration}', [\App\Http\Controllers\AssessmentController::class, 'store'])->name('admin.assessment.store');
 
     // Executive Dashboard Analytics
-    Route::get('/admin/dashboard', function () {
-        $totalRegistrations = Registration::count();
-        $passedRegistrations = Registration::whereIn('status', ['approved', 'passed', 'lunas'])->count();
-        $totalRevenue = \App\Models\Payment::whereIn('status', ['verified', 'paid'])->sum('amount');
-        if ($totalRevenue == 0) {
-            $totalRevenue = Registration::whereIn('status', ['paid', 'approved', 'passed'])->count() * 300000;
-        }
-        $boardingCount = Registration::where('is_boarding', true)->count();
-
-        $clusters = \App\Models\ProgramCluster::withCount('registrations')->get();
-        $clusterLabels = $clusters->pluck('name')->toArray();
-        $clusterCounts = $clusters->pluck('registrations_count')->toArray();
-
-        $statusCounts = [
-            Registration::where('status', 'draft')->count(),
-            Registration::where('status', 'pending_payment')->count(),
-            Registration::where('status', 'paid')->count(),
-            Registration::where('status', 'revision_needed')->count(),
-            Registration::whereIn('status', ['approved', 'passed'])->count(),
-        ];
-
-        return view('admin.dashboard', compact(
-            'totalRegistrations', 'passedRegistrations', 'totalRevenue', 'boardingCount',
-            'clusterLabels', 'clusterCounts', 'statusCounts'
-        ));
-    })->name('admin.dashboard');
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
     // Pengaturan Kuota & Gelombang (Admin Settings)
     Route::get('/admin/settings', function () {
@@ -190,7 +167,19 @@ Route::get('/api/quick-status', function (Request $request) {
 })->name('api.quick_status');
 
 
-// --- 7. Fitur Ekspor Data Admin (Format EMIS Kemenag & Dapodik Kemendikbud) ---
+// Rute Profil Panitia (Dapat diakses oleh semua role panitia)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/panitia/profil', [ProfileController::class, 'edit'])->name('panitia.profil');
+    Route::put('/panitia/profil', [ProfileController::class, 'updateProfile'])->name('panitia.profil.update');
+    Route::put('/panitia/profil/password', [ProfileController::class, 'updatePassword'])->name('panitia.profil.password');
+
+    // Alias URL agar tidak 404 jika diakses dari menu lain
+    Route::get('/admin/profil', [ProfileController::class, 'edit']);
+    Route::get('/verifikator/profil', [ProfileController::class, 'edit']);
+    Route::get('/kasir/profil', [ProfileController::class, 'edit']);
+    Route::get('/bendahara/profil', [ProfileController::class, 'edit']);
+});
+
 Route::middleware(['auth', 'role:admin,verifikator,bendahara'])->group(function () {
     Route::get('/admin/export/emis', [AdminExportController::class, 'exportEmis'])->name('admin.export.emis');
     Route::get('/admin/export/dapodik', [AdminExportController::class, 'exportDapodik'])->name('admin.export.dapodik');
@@ -198,10 +187,17 @@ Route::middleware(['auth', 'role:admin,verifikator,bendahara'])->group(function 
 
 
 // --- 8. Mode Kasir Offline (Dashboard Bendahara & Kasir PPDB) ---
-Route::middleware(['auth', 'role:bendahara,admin'])->group(function () {
+Route::middleware(['auth', 'role:kasir,bendahara,admin'])->group(function () {
     Route::get('/bendahara/kasir', [CashierController::class, 'index'])->name('bendahara.kasir');
     Route::get('/bendahara/kasir/search', [CashierController::class, 'search'])->name('bendahara.kasir.search');
     Route::post('/bendahara/kasir/pay-cash/{registration}', [CashierController::class, 'payCash'])->name('bendahara.kasir.pay_cash');
+});
+
+// Rute Laporan Kasir
+Route::middleware(['auth'])->group(function () {
+    Route::get('/kasir/laporan', [PaymentController::class, 'laporanHarian'])->name('kasir.laporan');
+    Route::get('/bendahara/kasir/laporan', [PaymentController::class, 'laporanHarian']);
+    Route::get('/bendahara/laporan', [PaymentController::class, 'laporanHarian']);
 });
 
 

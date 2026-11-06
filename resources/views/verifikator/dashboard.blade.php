@@ -84,7 +84,13 @@
                     <a href="{{ route('bendahara.kasir') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 text-xs font-bold hover:bg-amber-100 transition">
                         <i class="fa-solid fa-cash-register mr-1.5"></i> Kasir Loket
                     </a>
+                    <a href="{{ route('kasir.laporan') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold hover:bg-emerald-100 transition">
+                        <i class="fa-solid fa-file-invoice-dollar mr-1.5"></i> Laporan Kasir
+                    </a>
                 @endif
+                <a href="{{ route('panitia.profil') }}" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold hover:bg-slate-100 transition" title="Pengaturan Profil">
+                    <i class="fa-solid fa-user-gear mr-1.5"></i> Profil
+                </a>
                 <form action="{{ route('logout') }}" method="POST" class="inline">
                     @csrf
                     <button type="submit" class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition" title="Logout">

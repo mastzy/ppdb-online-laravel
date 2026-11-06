@@ -404,6 +404,12 @@
                 <strong>{{ auth()->user()->name }}</strong>
                 <span>Role: {{ auth()->user()->role }}</span>
             </div>
+            <a href="{{ route('kasir.laporan') }}" class="btn-logout" style="background:#ecfdf5; color:#047857; border-color:#a7f3d0; text-decoration:none;">
+                Laporan Kasir
+            </a>
+            <a href="{{ route('panitia.profil') }}" class="btn-logout" style="background:#f8fafc; color:#334155; border-color:#cbd5e1; text-decoration:none;">
+                Pengaturan Profil
+            </a>
             <a href="{{ route('verifikator.dashboard') }}" class="btn-logout" style="background:#e0f2fe; color:#0284c7; border-color:#bae6fd; text-decoration:none;">
                 Dashboard Panitia
             </a>

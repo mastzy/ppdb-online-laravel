@@ -36,6 +36,9 @@
             </div>
 
             <div class="flex items-center space-x-3">
+                <a href="{{ route('kasir.laporan') }}" class="px-3 py-1.5 rounded-lg border border-emerald-200 bg-emerald-50 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition">
+                    <i class="fa-solid fa-file-invoice-dollar mr-1"></i> Laporan Kasir
+                </a>
                 <a href="{{ route('verifikator.dashboard') }}" class="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
                     <i class="fa-solid fa-arrow-left mr-1"></i> Dashboard Panitia
                 </a>

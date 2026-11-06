@@ -18,6 +18,8 @@
   * `resources/views/admin/dashboard.blade.php`: Executive live analytics dengan Chart.js (Donut Klaster & Bar Chart Status Verifikasi).
   * `resources/views/admin/verification/index.blade.php` & `verifikator/dashboard.blade.php`: In-App Document Preview Modal Alpine.js (buka gambar/PDF langsung tanpa download) + Quick Approve/Revisi form.
   * `resources/views/admin/kasir/index.blade.php`: Mode kasir offline bendahara pencarian instan + proses bayar tunai sekali klik (status PAID & kuitansi resmi).
+  * `resources/views/kasir/laporan.blade.php`: Modul rekapitulasi & laporan harian kasir bendahara (filter tanggal, 3 summary cards, tabel rincian transaksi, dan layout cetak resmi `@media print` dengan kopsurat & tanda tangan).
+  * `resources/views/panitia/profil.blade.php`: Modul pengaturan profil panitia (update nama, email) dan penggantian password aman dengan validasi `current_password` & konfirmasi.
   * `resources/views/admin/assessment/index.blade.php`: Penguji asesmen input skor BTQ, Tahfidz, Literasi, dan kalkulasi rekomendasi otomatis.
   * `resources/views/admin/settings/index.blade.php`: Pengaturan kuota dinamis per klaster Kurikulum Merdeka.
 - **Public Verification & Halaman Error**:

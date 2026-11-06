@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\Registration;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -95,6 +96,38 @@ class PaymentController extends Controller
 
         return redirect()->route('pendaftar.pembayaran')
             ->with('success', 'Bukti transfer berhasil diunggah! Panitia/Bendahara akan memverifikasi pembayaran Anda.');
+    }
+
+    /**
+     * Tampilkan rekapitulasi laporan harian kasir.
+     * Filter optional via query param `date` (Y-m-d). Default today.
+     */
+    public function laporanHarian(Request $request): View
+    {
+        $selectedDate = $request->input('date')
+            ? Carbon::parse($request->input('date'))->format('Y-m-d')
+            : now()->format('Y-m-d');
+
+        // Filter data dari tabel payments (status verified / paid) berdasarkan tanggal tersebut
+        $payments = Payment::whereDate('created_at', $selectedDate)
+            ->whereIn('status', ['verified', 'paid'])
+            ->with(['registration.cluster', 'verifier'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $totalTransaksi = $payments->count();
+        $totalNominal = (float) $payments->sum('amount');
+        $totalCash = (float) $payments->where('payment_method', 'cash')->sum('amount');
+        $totalTransfer = (float) $payments->where('payment_method', 'transfer')->sum('amount');
+
+        return view('kasir.laporan', compact(
+            'payments',
+            'selectedDate',
+            'totalTransaksi',
+            'totalNominal',
+            'totalCash',
+            'totalTransfer'
+        ));
     }
 
     /**
